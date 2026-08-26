@@ -1,0 +1,85 @@
+{
+    "DHDECKCARD": {
+        "SETTINGS": {
+            "DisableHUD": {
+                "label": "Disable Daggerheart: Card Deck HUD",
+                "hint": "Hide the HUD for you."
+            },
+            "HideHotbar": {
+                "label": "Hide Hotbar",
+                "hint": "Hide Foundry Macro Hotbar."
+            },
+            "DeckStyle": {
+                "label": "Cards Deck Style",
+                "hint": "How cards should be displayed.",
+                "options": {
+                    "curved": "Curved",
+                    "flat": "Flat"
+                }
+            },
+            "FrontPosition": {
+                "label": "Front Card Position",
+                "hint": "Choose whether the first, middle, or last card is displayed in front of the others.",
+                "options": {
+                    "first": "First",
+                    "middle": "Middle",
+                    "last": "Last"
+                }
+            },
+            "CardOverlap": {
+                "label": "Card Overlap",
+                "hint": "Adjust how much the cards overlap each other. Default 55."
+            },
+            "StyleResource": {
+                "label": "Resource Style",
+                "hint": "Choose resources should get a label, an icon or nothing.",
+                "options": {
+                    "label": "Label",
+                    "icon": "Icon",
+                    "none": "None"
+                }
+            },
+            "HideResource": {
+                "label": "Hide Character Resources",
+                "hint": "Hide Character resources"
+            },
+            "DeckPosition": {
+                "label": "Deck Position",
+                "hint": "Choose where the deck you be displayed.",
+                "options": {
+                    "left": "Left",
+                    "center": "Center",
+                    "right": "Right"
+                }
+            },
+            "DeckBorderMargin": {
+                "label": "Border Margin",
+                "hint": "Space between the border and the deck. Only for Left & Right Deck Position."
+            },
+            "DeckBottomMargin": {
+                "label": "Bottom Margin",
+                "hint": "Space between the bottom and the deck."
+            },
+            "PlayerToken": {
+                "label": "Use Character Token",
+                "hint": "Display Character Token picture instead of portrait."
+            },
+            "TTRpgCards": {
+                "label": "TTRPG Cards",
+                "hint": "Simulate cards like the TTRPG version."
+            },
+            "HideDescription": {
+                "label": "Hide Card description",
+                "hint": "Hide card description but keep features & actions."
+            }
+        },
+        "GENERAL": {
+            "NoAction": "-- No Action --",
+            "UseAction": "Use Action",
+            "Tags": {
+                "primary": "Primary",
+                "secondary": "Secondary"
+            }
+        }
+    }
+}

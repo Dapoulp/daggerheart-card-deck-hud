@@ -1,0 +1,39 @@
+{
+    "id": "daggerheart-card-deck-hud",
+    "title": "Daggerheart: Card Deck HUD",
+    "description": "A HUD to display your possible actions as cards like IRL version.",
+    "version": "1.0.0",
+    "authors": [
+        {
+        "name": "Po0lp"
+        }
+    ],
+    "compatibility": {
+        "minimum": "14",
+        "verified": "14"
+    },
+    "relationships": {
+        "systems": [
+        {
+            "id": "daggerheart",
+            "type": "system",
+            "compatibility": {
+                "minimum": "2.7.4"
+            }
+        }
+        ]
+    },
+    "esmodules": [
+        "dist/main.js"
+    ],
+    "styles": [
+        "dist/styles/main.css"
+    ],
+    "languages": [
+        {
+            "lang": "en",
+            "name": "English",
+            "path": "./lang/en.json"
+        }
+    ]
+}

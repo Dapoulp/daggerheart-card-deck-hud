@@ -1,0 +1,13 @@
+<div class="dh-cd-control-settings-menu">
+    {{#each itemTypes}}
+        <label>
+            {{label}}
+            <input
+                type="checkbox"
+                data-type="{{type}}"
+                data-action="toggleItemType"
+                {{#if active}}checked{{/if}}
+            >
+        </label>
+    {{/each}}
+</div>

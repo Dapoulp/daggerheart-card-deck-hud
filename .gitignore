@@ -1,0 +1,6 @@
+.vscode
+.env
+node_modules
+dist
+styles/daggerheart.css
+styles/daggerheart.css.map

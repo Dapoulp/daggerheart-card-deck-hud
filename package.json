@@ -1,0 +1,27 @@
+{
+  "name": "daggerheart-card-deck-hud",
+  "version": "1.0.0",
+  "description": "To make it easy for you to get started with GitLab, here's a list of recommended next steps.",
+  "homepage": "https://gitlab.com/dapoulp/foundry-mod/daggerheart-card-deck-hud#readme",
+  "bugs": {
+    "url": "https://gitlab.com/dapoulp/foundry-mod/daggerheart-card-deck-hud/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gitlab.com/dapoulp/foundry-mod/daggerheart-card-deck-hud.git"
+  },
+  "license": "ISC",
+  "author": "Po0lp",
+  "type": "commonjs",
+  "main": "main.js",
+  "scripts": {
+    "build": "node build.mjs",
+    "watch": "node build.mjs --watch",
+    "start": "npm run watch"
+  },
+  "devDependencies": {
+    "chokidar": "^5.0.0",
+    "esbuild": "^0.28.2",
+    "less": "^4.9.0"
+  }
+}
