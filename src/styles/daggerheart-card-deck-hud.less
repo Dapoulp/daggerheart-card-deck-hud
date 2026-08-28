@@ -85,7 +85,8 @@
     }
 
     .dh-cd-cards {
-        --card-width: calc(10rem * ~"(attr(data-card-width-coeff type(<number>)) / 5)");
+        // --card-width: calc(10rem * ~"(attr(data-card-width-coeff type(<number>)) / 5)");
+        --card-width: 10rem;
         --card-height: calc(var(--card-width) * 7 / 5);
         --fade-orientation: to top;
         
@@ -106,8 +107,6 @@
         &.description-hidden {
             .community, .ancestry, .subclass {
                 > article {
-                    max-height: calc(var(--height) * 0.65);
-
                     > section.description {
                         > *:not(.features) {
                             display: none;
@@ -115,6 +114,10 @@
                     }
                 }
             }
+        }
+
+        article {
+            max-height: calc(var(--height) * 0.65);
         }
 
         &:not(:hover) {
@@ -166,22 +169,9 @@
                 }
             }
 
-            &.description-hidden {
-                .community, .ancestry, .subclass {
-                    > article {
-                        max-height: calc(var(--height) * 0.65);
-
-                        > section.description {
-                            > *:not(.features) {
-                                display: none;
-                            }
-                        }
-                    }
-                }
-            }
-
             .card-buttons {
                 position: absolute;
+                top: 0;
                 left: 100%;
                 margin-left: 2px;
                 display: flex;
@@ -255,7 +245,7 @@
 
         .dh-card {
             cursor: pointer;
-            border-color: 1px solid light-dark(var(--dark-blue, #18162e), var(--golden, #f3c267));
+            border: 1px solid light-dark(var(--dark-blue, #18162e), var(--golden, #f3c267));
 
             .recall-cost {
                 --border-size: calc(var(--width) * 0.066);
@@ -446,5 +436,14 @@
                 cursor: move;
             }
         }
+    }
+}
+
+.dh-old-firefox-cards {
+    .dh-card,
+    .dh-card * {
+        --card-width: 160px;
+        // --scale: 1;
+        --scale: 0.55;
     }
 }

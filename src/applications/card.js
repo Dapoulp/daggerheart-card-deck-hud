@@ -188,6 +188,8 @@ export default class DHCard {
             description += '</div></div>';
         }
 
+        console.log(description)
+
         const content = await foundry.applications.handlebars.renderTemplate(embedTemplate, {
             item,
             description,
