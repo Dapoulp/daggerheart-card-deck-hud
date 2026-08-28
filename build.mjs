@@ -48,8 +48,8 @@ const foundryAssetsPlugin = {
 
 const config = {
     entryPoints: [
-        "src/main.js",
-        "src/styles/main.less"
+        "src/daggerheart-card-deck-hud.js",
+        "src/styles/daggerheart-card-deck-hud.less"
     ],
     bundle: true,
     outdir: "dist",

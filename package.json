@@ -13,7 +13,7 @@
   "license": "ISC",
   "author": "Po0lp",
   "type": "commonjs",
-  "main": "main.js",
+  "main": "daggerheart-card-deck-hud.js",
   "scripts": {
     "build": "node build.mjs",
     "watch": "node build.mjs --watch",

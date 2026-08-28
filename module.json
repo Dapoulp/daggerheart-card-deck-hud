@@ -24,10 +24,10 @@
         ]
     },
     "esmodules": [
-        "dist/main.js"
+        "dist/daggerheart-card-deck-hud.js"
     ],
     "styles": [
-        "dist/styles/main.css"
+        "dist/styles/daggerheart-card-deck-hud.css"
     ],
     "languages": [
         {
@@ -35,5 +35,7 @@
             "name": "English",
             "path": "./lang/en.json"
         }
-    ]
+    ],
+    "manifest": "https://github.com/Dapoulp/daggerheart-card-deck-hud/releases/latest/download/module.json",
+    "download": "https://github.com/Dapoulp/daggerheart-card-deck-hud/releases/download/v1.0.0/daggerheart-card-deck-hud.zip"
 }
