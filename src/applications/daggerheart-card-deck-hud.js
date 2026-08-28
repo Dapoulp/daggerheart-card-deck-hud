@@ -1,16 +1,13 @@
-import { CardService } from "../services/card-service";
-import { RESOURCES } from "../data/resources";
 import { MODULE_ID } from "../system/constants";
+import DHDeck from "./deck";
 
-const {
-    ApplicationV2,
-    HandlebarsApplicationMixin
-} = foundry.applications.api;
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
-export class DHCardDeck extends HandlebarsApplicationMixin(ApplicationV2) {
+export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
     static instance = null;
-    isMenuOpen = false;
-    #clickTimer = null;
+    deck = null;
+    #dragData = null;
+    #isCollapsed = false;
 
     static DEFAULT_OPTIONS = {
         id: "dh-card-deck",
@@ -35,9 +32,6 @@ export class DHCardDeck extends HandlebarsApplicationMixin(ApplicationV2) {
             toggleMenu: this.#toggleMenu,
             toggleItemType: this.#toggleItemType,
             useCard: this.#useCard,
-            onIncreaseResource: this.#onIncreaseResource,
-            triggerUse: this.#triggerUse,
-            selectCard: this.#selectCard,
             sendToVault: this.#sendToVault,
             sendToLoadout: this.#sendToLoadout,
             recall: this.#recall,
@@ -48,23 +42,19 @@ export class DHCardDeck extends HandlebarsApplicationMixin(ApplicationV2) {
     };
 
     static PARTS = {
-        hud: {
-            root: true,
-            template: "modules/daggerheart-card-deck-hud/templates/hud.hbs"
+        deck: {
+            template: "modules/daggerheart-card-deck-hud/templates/deck.hbs"
+        },
+        controls: {
+            template: "modules/daggerheart-card-deck-hud/templates/controls.hbs"
         }
     };
 
     #actor = null;
     #token = null;
-    #isVault = false;
-    #isCollapsed = false;
-    #isMenuOpen = false;
-    #itemTypes;
-    // #isBeastform = false;
 
     constructor(options = {}) {
         super(options);
-        this.#itemTypes = CardService.initializeItemTypes();
     }
 
     static async create() {
@@ -74,6 +64,7 @@ export class DHCardDeck extends HandlebarsApplicationMixin(ApplicationV2) {
         this.instance = hud;
 
         await hud.render({force: true});
+        hud.element.setAttribute("hidden", "");
 
         const token = canvas.tokens?.controlled[0];
 
@@ -91,7 +82,7 @@ export class DHCardDeck extends HandlebarsApplicationMixin(ApplicationV2) {
     async _onClose(options) {
         await super._onClose(options);
 
-        DHCardDeck.instance = null;
+        DHCardDeckHUD.instance = null;
     }
 
     get actor() {
@@ -117,8 +108,11 @@ export class DHCardDeck extends HandlebarsApplicationMixin(ApplicationV2) {
                 break;    
             case 'right':
                 if(uiRight) uiRight.appendChild(element);
-                break;       
-            default:
+                break;
+            case "custom":
+                const position = game.settings.get(MODULE_ID, "deckCustomPosition");
+                element.style.left = `${position.left ?? 0}px`;
+                element.style.top = `${position.top ?? 0}px`;
                 break;
         }
 
@@ -132,42 +126,88 @@ export class DHCardDeck extends HandlebarsApplicationMixin(ApplicationV2) {
 
         ["click", "contextmenu"].forEach(eventType => {
             document.addEventListener(eventType, event => {
-               DHCardDeck._unselectCard(event);
-                if (!this.isMenuOpen || event.target.closest(".dh-cd-control-settings-menu") || event.target.closest(".dh-cd-control-toggle")) return;
-                this._toggleMenu(event);
+               if(this.deck?.cards) this._selectCard();
+               if(!this.parts.controls.hasAttribute('data-menu-open') || event.target.closest('.dh-cd-control-settings-menu')) return;
+               this._toggleMenu(event);
             });
         });
-
-        // this.element.addEventListener("contextmenu", this.#onContextMenu);
-        this.element.addEventListener('dblclick', this.#onDblClick);
     }
 
     async _onRender(context, options) {
         await super._onRender(context, options);
+        if(!this.#actor) return;
+
+        if (options.parts?.includes("deck")) {
+            this.parts.deck.replaceChildren(...this.deck.cards.values().map(card => card.element));
+            this.deck._setDeckSize();
+
+            for (const card of this.deck.cards.values()) {
+                card.element.addEventListener("contextmenu", event => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    this._selectCard(card);
+                    if(this.parts.controls.hasAttribute('data-menu-open')) this._toggleMenu(event);
+                });
+                
+                card.element.addEventListener("transitionend", event => {
+                    if (event.propertyName !== "transform") return;
+                    if (card.selected) card.element.classList.add("show-actions");
+                });
+            }
+            this.deck.applyGradient(game.settings.get(MODULE_ID, "cardGradient"));
+            this.parts.deck.style.setProperty("--hover-y-value", `${game.settings.get(MODULE_ID, "hoverY") * -1}rem`);
+        }
 
         this.updateMarginPosition();
 
-        // this.element.querySelectorAll('.card').forEach((card, i) => {
-        this.element.querySelectorAll('.dh-card').forEach((card, i) => {
-            card.addEventListener('contextmenu', DHCardDeck.#selectCard);
-            card.addEventListener("transitionend", event => {
-                if (event.propertyName !== "transform") return;
+        if (options.parts?.includes("controls")) {
+            const menu = this.parts.controls.querySelector(".dh-cd-control-settings-menu");
 
-                if (card.classList.contains("selected")) {
-                    card.classList.add("show-actions");
-                }
+            let dragged = null;
+
+            menu.addEventListener("dragstart", event => {
+                dragged = event.target.closest("label");
             });
-        });
 
-        const deckBounds = this.getDeckBounds();
-        if(!deckBounds) return;
+            menu.addEventListener("dragover", event => {
+                event.preventDefault();
 
-        this.element.style.width = `${deckBounds.width}px`;
-        this.element.querySelector('.dh-cd-cards').style.height = `${deckBounds.height}px`;
+                const target = event.target.closest("label");
 
-        const settingsButton = this.element.querySelector("[data-action='toggleMenu']");
-        if (!settingsButton) return;
-        settingsButton.addEventListener("contextmenu", this._toggleMenu.bind(this));
+                if (!target || target === dragged) return;
+
+                const rect = target.getBoundingClientRect();
+                const after = event.clientY > rect.top + rect.height / 2;
+
+                menu.insertBefore(
+                    dragged,
+                    after ? target.nextSibling : target
+                );
+            });
+
+            menu.addEventListener("dragend", async () => {
+                dragged = null;
+
+                await this._saveItemTypes();
+                await this.deck.createCards();
+                await this.render({ parts: ['deck'] });
+            });
+
+            const settingsButton = this.element.querySelector("[data-action='toggleMenu']");
+            if (settingsButton) settingsButton.addEventListener("contextmenu", this._toggleMenu.bind(this));
+
+            const moveButton = this.element.querySelector(".dh-cd-control-move");
+            if (moveButton) moveButton.addEventListener("pointerdown", this.#onDragStart);
+        }
+
+        // Test Animation Cards Reveal
+        /* deckElement.replaceChildren();
+
+        for (const card of this.deck.cards) {
+            deckElement.append(card.element);
+
+            await new Promise(resolve => setTimeout(resolve, 20));
+        } */
     }
 
     getDeckBounds() {
@@ -193,96 +233,95 @@ export class DHCardDeck extends HandlebarsApplicationMixin(ApplicationV2) {
         };
     }
 
-    updateMarginPosition() {
+    updateMarginPosition(deckBorderMargin, deckBottomMargin) {
         if(!this.element) return;
-        this.element.style.setProperty("--borderMargin", `${game.settings.get(MODULE_ID, "deckBorderMargin")}px`);
-        this.element.style.setProperty("--bottomMargin", `${game.settings.get(MODULE_ID, "deckBottomMargin")}px`);
+        deckBorderMargin ??= game.settings.get(MODULE_ID, "deckBorderMargin");
+        deckBottomMargin ??= game.settings.get(MODULE_ID, "deckBottomMargin");
+        this.element.style.setProperty("--borderMargin", `${deckBorderMargin}px`);
+        this.element.style.setProperty("--bottomMargin", `${deckBottomMargin}px`);
     }
 
     async setActor(actor, token = null) {
         this.#actor = actor;
         this.#token = token;
-        this.#isVault = false;
-        // this.#isBeastform = 
 
-        await this.render();
+        this.element.removeAttribute("hidden");
+        
+        await this.createDeck();
     }
 
     async clearActor() {
         this.#actor = null;
         this.#token = null;
+        this.deck = null;
 
-        await this.render();
+        this.element.setAttribute("hidden", "");
+        this.element.replaceChildren();
     }
 
-    async _prepareContext(options) {
-        const context = await super._prepareContext(options);
+    async createDeck() {
+        this.deck = await DHDeck.create(this.#actor, this);
+        await this.render({ parts: ["deck", "controls"] });
+    }
+
+    // async _prepareContext(options) {
+    //     const context = await super._prepareContext(options);
+    //     if(!this.#actor) return context;
+    //     return context;
+    // }
+
+    /* -------------------------------------------- */
+
+    /** @override */
+    async _preparePartContext(partId, context, options) {
+        context = await super._preparePartContext(partId, context, options);
         if(!this.#actor) return context;
+        switch (partId) {
+            case "deck": return this._prepareDeckContext(context, options);
+            case "controls": return this._prepareControlsContext(context, options);
+        }
+        return context;
+    }
 
-        context.actor = this.#actor;
-        context.token = this.#token;
-        context.visible = Boolean(this.#actor);
-        context.collapsed = this.#isCollapsed;
-        context.isVault = this.#isVault;
-        context.menuOpen = this.isMenuOpen;
-        context.resources = CardService.getResources(this.#actor, RESOURCES);
-        context.cards = await CardService.getCards(
-            this.#actor,
-            {
-                isVault: this.#isVault,
-                itemTypes: this.#itemTypes
-            }
-        );
-        context.itemTypes = this.#itemTypes;
-        // context.isFlat = game.settings.get(MODULE_ID, "deckStyle") === 'flat';
-        context.isResourceHidden = game.settings.get(MODULE_ID, "hideResource");
-        context.styleResource = game.settings.get(MODULE_ID, "styleResource");
+    async _prepareDeckContext(partId, context, options) {
+        context = await super._preparePartContext(partId, context, options);
+        if(!this.#actor) return context;
+        context.classes = this.deck.classes;
+        context.cardCount = this.deck.cards.size;
+        context.cardOverlap = game.settings.get(MODULE_ID, "cardOverlap") ?? 55;
+        context.cardWidthCoeff = game.settings.get(MODULE_ID, "cardWidth") ?? 5;
+        return context;
+    }
+
+    _prepareControlsContext(context, options) {
+        context.itemTypes = this.deck.itemTypes;
+        context.isVault = this.deck.isVault;
         context.hasVaultCards = this.#actor.system.domainCards.vault.length > 0;
-        // context.isBeastform = !!CardService.isBeastform(this.#actor);
-
-        // context.isTTRPGmode = game.settings.get(MODULE_ID, "ttRpgCards");
-
-        context.classes = {
-            isFlat: { class: 'flat', active: game.settings.get(MODULE_ID, "deckStyle") === 'flat' },
-            isTTRPGmode: { class: 'ttrpg-mode', active: game.settings.get(MODULE_ID, "ttRpgCards") },
-            isBeastform: { class: 'beastform', active: !!this.#actor.system.activeBeastform }
-        }
-
-        const currentHP = this.#actor.system.resources.hitPoints.value;
-        const currentMax = this.#actor.system.resources.hitPoints.max;
-        context.token = {
-            picture: game.settings.get(MODULE_ID, "playerToken") ? this.#token.document.texture.src : this.#actor.img,
-            hp: {
-                value: currentHP,
-                max: currentMax,
-                perc: currentMax > 0 ? Math.floor(((currentMax- currentHP)/currentMax)*100) : 0
-            }
-        }
-
+        context.isFreePositioning = game.settings.get(MODULE_ID, "deckPosition") === 'custom';
         return context;
     }
 
     static async #toggleVault() {
-        this.#isVault = !this.#isVault;
-
-        await this.render();
+        this.deck.isVault = !this.deck.isVault;
+        await this.deck.createCards();
+        await this.render({ parts: ["deck", "controls"] });
     }
 
     static async #toggleHUD() {
         this.#isCollapsed = !this.#isCollapsed;
 
-        const cards = this.element.querySelector(".dh-cd-cards");
+        const deck = this.parts.deck;
         const marginSetting = game.settings.get(MODULE_ID, "deckBottomMargin");
         let offset = marginSetting;
 
-        if (!cards) return;
+        if (!deck) return;
 
         if(this.#isCollapsed) {
-            const rect = cards.getBoundingClientRect();
+            const rect = deck.getBoundingClientRect();
             offset = `calc(${window.innerHeight - rect.top}px + 1rem + ${marginSetting}px)`;
         }
 
-        cards.style.setProperty("--dh-cd-hide-offset", offset);
+        deck.style.setProperty("--dh-cd-hide-offset", offset);
 
         this.element.classList.toggle("is-hidden", this.#isCollapsed);
     }
@@ -294,138 +333,62 @@ export class DHCardDeck extends HandlebarsApplicationMixin(ApplicationV2) {
     async _toggleMenu(event) {
         event.preventDefault();
         event.stopPropagation();
-        this.isMenuOpen = !this.isMenuOpen;
-        await this.render();
+        this.parts.controls.toggleAttribute("data-menu-open");
     }
 
     static async #toggleItemType(event, target) {
         const type = target.dataset.type;
-        const itemType = this.#itemTypes.find(
-            item => item.type === type
-        );
+        const itemType = this.deck.itemTypes.find(item => item.type === type);
 
         if (!itemType) return;
 
         itemType.active = !itemType.active;
 
-        await this.render();
+        this._saveItemTypes();
+        await this.deck.createCards();
+        await this.render({ parts: ['deck'] });
     }
 
-    static async #useCard(event, target) {
-        if(game.settings.get(MODULE_ID, "ttRpgCards") && !target.closest('.card')?.classList.contains('selected')) return DHCardDeck.#selectCard(event);
-        const uuid = target.dataset.itemId;
-        const item = await fromUuid(uuid) ?? (uuid === this.actor.system.attack?.id ? this.actor.system.attack : null);
+    async _saveItemTypes() {
+        const itemTypes = [
+            ...this.parts.controls.querySelectorAll(
+                ".dh-cd-control-settings-menu label"
+            )
+        ].map(label => ({
+            type: label.dataset.type,
+            active: label.querySelector('input[type="checkbox"]').checked
+        }));
 
-        if (!item) return;
+        this.deck.itemTypes = itemTypes;
 
-        if (item.system?.actionsList || item === this.actor.system.attack) {
-            DHCardDeck._unselectCard(event, true);
-            return await item.use(event);
+        await game.settings.set(
+            "daggerheart-card-deck-hud",
+            "itemTypes",
+            itemTypes
+        );
+    }
+
+    static #useCard(event, target) {
+        const { cardId } = target.closest('[data-card-id').dataset;
+        const card = this.deck.cards.get(cardId);
+
+        if(!card.isLocked && (!game.settings.get(MODULE_ID, "directAction") || card.selected)) return card.use(event);
+        this._selectCard(card);
+    }
+
+    _selectCard(card) {
+        if(card) card.toggleSelected();
+        for (const otherCard of this.deck.cards.values()) {
+            if (otherCard !== card && otherCard.selected) otherCard.selected = false;
         }
-        // If no actions attached, check for features and simulate item with actions
-        const attachedFeatures = CardService.getItemFeatures(item).map(f => f.uuid);
-        const features = this.actor.items.filter(i => attachedFeatures.includes(i.sourceUuid));
-        const actions = features.flatMap(f => [...f.system.actions.values()]);
-        const fakeItem = CardService.constructItem(item, actions);
-        // console.log(features, actions);
-        // game.system.api.applications.dialogs.ActionSelectionDialog.create(fakeItem, event);
-        let count = 0;
-        const hasMultipleFeaturesWithActions = features.some(feature => {
-            if (feature.system.actions.size > 0) count++;
-            return count > 1;
-        });
-        if(features?.length) {
-            if(hasMultipleFeaturesWithActions) {
-                // Feature Selection Dialog
-            } else features.find(f => f.system.actions.size).use(event);
-        }
-    }
-
-    #onContextMenu = async (event) => {
-        const resource = event.target.closest("[data-resource-id]");
-
-        if (!resource || !this.element.contains(resource)) return;
-
-        event.preventDefault();
-
-        await this._updateResource(resource.dataset.resourceId, -1);
-    };
-
-    static async #onIncreaseResource(event, target) {
-        // clearTimeout(this.#clickTimer);
-        const { resourceId } = target.closest("[data-resource-id]")?.dataset ?? {};
-        if(!resourceId) return;
-
-        // this.#clickTimer = setTimeout(async () => {
-            // this.#clickTimer = null;
-            await this._updateResource(resourceId, 1);
-        // }, 300);
-    }
-
-    async _updateResource(resourceId, value) {
-        switch (resourceId) {
-            case "armor":
-                await this.actor.system.updateArmorValue({ value: value });
-                break;        
-            default:
-                const newValue = Math.clamp(this.actor.system.resources[resourceId].value + value, 0, this.actor.system.resources[resourceId].max) ;
-                await this.actor.update({ [`system.resources.${resourceId}.value`]: newValue });
-                break;
-        }
-    }
-
-    #onDblClick = (event) => {
-        // clearTimeout(this.#clickTimer);
-        // this.#clickTimer = null;
-        const imgContainer = event.target.closest(".dh-cd-player");
-
-        if (!imgContainer || !this.element.contains(imgContainer)) return;
-
-        event.preventDefault();
-
-        this.#actor.sheet.render({ force: true, focus: true });
-    }
-
-    static #triggerUse(event, target) {
-        event.preventDefault();
-        event.stopPropagation();
-        if(game.settings.get(MODULE_ID, "ttRpgCards") && !target.closest('.card')?.classList.contains('selected')) return DHCardDeck.#selectCard(event);
-        const { itemId, actionId } = target.closest('[data-action]').dataset;
-        const item = this.#actor.items.get(itemId);
-        const action = CardService.getAssociatedUse(item, actionId);
-        DHCardDeck._unselectCard(event, true);
-        if(!action) return;
-        return action.use(event);
-    }
-
-    static #selectCard(event) {
-        event.preventDefault();
-
-        // const card = event.target.closest('.card');
-        const card = event.target.closest('.dh-card');
-        
-        if (card.classList.contains('selected')) {
-            card.classList.remove('show-actions');
-            card.classList.remove('selected');
-            return;
-        }
-
-        // document.querySelectorAll('.card.selected')
-        document.querySelectorAll('.dh-card.selected')
-            .forEach(c => {
-                c.classList.remove('show-actions');
-                c.classList.remove('selected');
-            });
-
-        card.classList.add('selected');
     }
 
     static _unselectCard(event, force = false) {
-        // const selectedCard = DHCardDeck.instance.element.querySelector(".card.selected");
-        const selectedCard = DHCardDeck.instance.element.querySelector(".dh-card.selected");
+        // const selectedCard = DHCardDeckHUD.instance.element.querySelector(".card.selected");
+        const selectedCard = DHCardDeckHUD.instance.element.querySelector(".dh-card.selected");
         if ((selectedCard && !selectedCard.contains(event.target)) || force) {
-            // DHCardDeck.instance.element.querySelectorAll('.card.selected')
-            DHCardDeck.instance.element.querySelectorAll('.dh-card.selected')
+            // DHCardDeckHUD.instance.element.querySelectorAll('.card.selected')
+            DHCardDeckHUD.instance.element.querySelectorAll('.dh-card.selected')
                 .forEach(c => {
                     c.classList.remove('show-actions');
                     c.classList.remove('selected');
@@ -482,5 +445,68 @@ export class DHCardDeck extends HandlebarsApplicationMixin(ApplicationV2) {
         const item = fromUuidSync(itemId);
         if(!item) return;
         item.delete();
+    }
+
+    #onDragStart = event => {
+        event.preventDefault();
+
+        this.element.setAttribute('data-dragging', '');
+        const rect = this.element.getBoundingClientRect();
+
+        this.#dragData = {
+            startX: event.clientX,
+            startY: event.clientY,
+            left: rect.left,
+            top: rect.top
+        };
+
+        document.addEventListener("pointermove", this.#onDragMove);
+        document.addEventListener("pointerup", this.#onDragEnd, { once: true });
+    }
+
+    #onDragMove = event => {
+        if (!this.#dragData) return;
+
+        const {
+            startX,
+            startY,
+            left,
+            top
+        } = this.#dragData;
+
+        const dx = event.clientX - startX;
+        const dy = event.clientY - startY;
+
+        const width = this.element.offsetWidth;
+        const height = this.element.offsetHeight;
+
+        const newLeft = Math.min(
+            Math.max(0, left + dx),
+            window.innerWidth - width
+        );
+
+        const newTop = Math.min(
+            Math.max(0, top + dy),
+            window.innerHeight - height
+        );
+
+        this.element.style.left = `${newLeft}px`;
+        this.element.style.top = `${newTop}px`;
+    }
+
+    #onDragEnd = async event => {
+        this.element.removeAttribute('data-dragging');
+        document.removeEventListener("pointermove", this.#onDragMove);
+
+        if (!this.#dragData) return;
+
+        const rect = this.element.getBoundingClientRect();
+
+        await game.settings.set(MODULE_ID, "deckCustomPosition", {
+            left: rect.left,
+            top: rect.top
+        });
+
+        this.#dragData = null;
     }
 }

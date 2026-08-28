@@ -13,14 +13,20 @@
     z-index: 100;
     pointer-events: none;
     position: relative;
-    transition: left 0.2s ease,
-        right 0.2s ease,
-        bottom 0.2s ease,
-        margin-bottom 0.2s ease;
+
+    &:not([data-dragging]) {
+        transition: left 0.2s ease,
+            right 0.2s ease,
+            bottom 0.2s ease,
+            margin-bottom 0.2s ease;    
+    }
 
     &.alternate-positioning {
         position: fixed;
-        bottom: var(--bottomMargin);
+
+        &.position-center, &.position-left, &.position-right {
+            bottom: var(--bottomMargin);
+        }
 
         &.position-center {
             left: 50%;
@@ -34,6 +40,14 @@
         &.position-right {
             position: absolute;
             right: var(--borderMargin);
+        }
+
+        &.position-custom {
+            margin: 0;
+        }
+
+        &:hover {
+            z-index: 200;
         }
     }
 
@@ -53,6 +67,11 @@
         }
     }
 
+    .dh-card-wrapper,
+    .dh-cd-controls {
+        pointer-events: auto;
+    }
+
     .overflow-y {
         overflow-y: auto;
         overflow-x: hidden;
@@ -65,38 +84,64 @@
         padding-right: calc(12px - var(--scrollbar-width)) !important;
     }
 
-    .dh-cd-cards,
-    .dh-cd-resources,
-    .dh-cd-controls,
-    .dh-cd-settings {
-        pointer-events: auto;
-    }
-
     .dh-cd-cards {
+        --card-width: calc(10rem * ~"(attr(data-card-width-coeff type(<number>)) / 5)");
+        --card-height: calc(var(--card-width) * 7 / 5);
+        --fade-orientation: to top;
+        
         position: relative;
-        width: 100%;
-        height: 16rem;
-        transform: translateY(var(--dh-cd-hide-offset, 0px));
-        transition: transform 0.3s ease;
 
-        /* &:not(:hover) {
+        transform: translateY(var(--dh-cd-hide-offset, 0px));
+        transition: transform 0.3s ease, height 0.3s ease, top 0.3s ease;
+
+        &.flat {
+            height: calc(var(--card-height) + 20px);
+
+            .dh-card-wrapper {
+                --translate-y: 0px !important;
+                --rotate: 0deg !important;
+            }
+        }
+
+        &.description-hidden {
+            .community, .ancestry, .subclass {
+                > article {
+                    max-height: calc(var(--height) * 0.65);
+
+                    > section.description {
+                        > *:not(.features) {
+                            display: none;
+                        }
+                    }
+                }
+            }
+        }
+
+        &:not(:hover) {
             .dh-card:not(.selected) {
                 mask-image: linear-gradient(
-                    to top,
+                    var(--fade-orientation),
                     black 0%,
-                    grey 25%,
-                    transparent 75%
+                    black max(calc(var(--card-gradient) - 20%), 0%),
+                    transparent var(--card-gradient)
                 );
             }
-        } */
+        }
 
-        .dh-card {
-            --width: 10rem;
-            cursor: pointer;
+        &.invert-gradient {
+            --fade-orientation: to bottom;
+        }
+
+        &.no-gradient {
+            mask-image: none;
+        }
+
+        .dh-card-wrapper {
+            position: absolute;
 
             &:not(.selected) {
-                &:hover {
-                    --hover-y: -1.25rem;
+                &:has(.hover-layout:hover) {
+                    --hover-y: var(--hover-y-value);
                     --hover-scale: 1.1;
                     --base-z: 500 !important;
                 }
@@ -115,10 +160,14 @@
                 transform: translate(-50%, 0) scale(var(--card-scale)) !important;
                 z-index: 1000 !important;
                 image-rendering: auto;
+
+                .hover-layout {
+                    pointer-events: none;
+                }
             }
 
             &.description-hidden {
-                &.community, &.ancestry, &.subclass {
+                .community, .ancestry, .subclass {
                     > article {
                         max-height: calc(var(--height) * 0.65);
 
@@ -128,443 +177,6 @@
                             }
                         }
                     }
-                }
-            }
-
-            .recall-cost {
-                --border-size: calc(var(--width) * 0.066);
-            }
-
-            > article {
-                > header.name {
-                    margin-bottom: 0.5rem;
-                }
-
-                section {
-                    &.description {
-                        padding: 0 calc(10px * var(--scale));
-
-                        .equipment-details {
-                            margin-bottom: 0.25rem;
-                        }
-
-                        .features {
-                            .item-description-container {
-                                display: flex;
-                                flex-direction: column;
-                                gap: 0.25rem;
-                            }
-                        }
-                    }
-                }
-            }
-
-            &.equipment, &.beastform {
-                .recall-cost {
-                    display: none;
-                }
-            }
-
-            &.beastform {
-                .domain-card-banner {
-                    display: none;
-                }
-            }
-        }
-
-        .card {
-            --width: 10rem;
-            --data-type: attr(data-type);
-
-            display: flex;
-            flex-direction: column;
-            width: var(--dh-card-width);
-            aspect-ratio: 5 / 7;
-            border-radius: 0.5rem;
-            background: #fff;
-            border: 1px solid var(--color-border);
-            cursor: pointer;
-            // overflow: hidden;
-            // padding-bottom: 0.5rem;
-            box-shadow:
-                0 0.4rem 1rem rgba(0, 0, 0, 0.45),
-                0 0 0.25rem rgba(0, 0, 0, 0.3);
-
-            &:not(.selected):hover {
-                --hover-y: -1.25rem;
-                --hover-scale: 1.1;
-                --base-z: 500 !important;
-                
-                box-shadow:
-                    0 0.625rem 1.6rem rgba(0, 0, 0, 0.55),
-                    0 0 0.4rem rgba(0, 0, 0, 0.4);
-
-                .card-bottom .card-content {
-                    overflow-y: hidden;
-                }
-            }
-
-            &.selected {
-                // position: absolute;
-                left: 50%;
-                top: -100%;
-
-                --translate-x: 0px;
-                --translate-y: 0px;
-                --rotate: 0deg;
-                --hover-y: 0px;
-                --hover-scale: 1;
-                --card-scale: 2;
-
-                transform: translate(-50%, 0) scale(var(--card-scale)) !important;
-                z-index: 1000 !important;
-                image-rendering: auto;
-
-                &[data-action="selectCard"] {
-                    cursor: initial;
-                }
-
-                .card-bottom .card-content .card-content-text .card-action-use {
-                    &[data-action] {
-                        cursor: pointer;
-                        position: relative;
-
-                        &::after {
-                            content: "";
-                            position: absolute;
-                            inset: 0;
-                            pointer-events: none;
-                            border-radius: 0.2rem;
-
-                            box-shadow: inset 0 0 0.2rem rgba(0, 0, 0, 0.5);
-
-                            opacity: 0;
-                            transition: opacity 150ms ease;
-                        }
-
-                        &:hover::after {
-                            opacity: 1;
-                        }
-                    }
-                    &:not([data-action]) {
-                        cursor: not-allowed;
-                    }
-                }
-            }
-
-            .card-container {
-                height: 100%;
-                padding-bottom: 0.25rem;
-                overflow: hidden;
-                display: flex;
-                flex-direction: column;
-                border-radius: 0.5rem;
-            }
-
-            .card-top {
-                background-size: cover;
-                background-position: center;
-                // flex: 1 1 0;
-                min-height: 4.5rem;
-                // max-height: 6rem;
-                flex: 0 1 6rem;
-                .card-top-left {
-                    position: absolute;
-                    height: 3.25rem;
-                    width: 2rem;
-                    top: 0;
-                    left: 0.4rem;
-                    background-size: cover;
-                    background-position: bottom 0px center;
-                    background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-generic.webp);
-                    margin-right: 0.1rem;
-
-                    .card-top-left-text {
-                        color: white;
-                        position: relative;
-                        left: 0px;
-                        font-family: 'Overpass';
-                        font-weight: 700;
-                        text-align: center;
-                        top: 0.625rem;
-                        font-size: var(--font-size-14);
-                        line-height: 0.625rem;
-                        padding-right: 1px;
-                    }
-                }
-                
-                .card-top-right {
-                    position: absolute;
-                    height: 1rem;
-                    width: 1rem;
-                    display: flex;
-                    align-items: center;
-                    padding: 3px;
-                    background-image: url(https://content.demiplane.com/nexus/daggerheart/stress-cost-bg.webp) !important;
-                    background-size: contain;
-                    background-position: center;
-                    top: 0.75rem;
-                    right: 0.75rem;
-                    color: white;
-
-                    .card-top-right-text {
-                        font-size: 0.4rem;
-                        color: #E3E7F0;
-                        font-family: "Overpass";
-                        padding-left: 1px;
-                        width: 0.4rem;
-                    }
-                }
-            }
-
-            .card-bottom {
-                display: flex;
-                flex-direction: column;
-                min-height: 0;
-                color: black;
-                position: relative;
-                padding-bottom: 0.25rem;
-
-                &::before {
-                    content: " ";
-                    position: absolute;
-                    height: 3rem;
-                    width: 100%;
-                    background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/domain-divider-generic.webp);
-                    background-position: top center;
-                    background-size: 10rem;
-                    background-repeat: no-repeat;
-                    z-index: 0;
-                    top: -0.625rem;
-                    pointer-events: none;
-                }
-
-                &::after {
-                    content: var(--data-type);
-                    position: absolute;
-                    font-family: "Signika";
-                    font-weight: 700;
-                    color: white;
-                    font-size: 0.3rem;
-                    text-align: center;
-                    line-height: 1;
-                    text-transform: uppercase;
-                    letter-spacing: 0.05rem;
-                    top: -0.4rem;
-                    left: 50%;
-                    transform: translateX(-50%);
-                }
-
-                /* .card-divider {
-                    position: absolute;
-                    // height: 3rem;
-                    width: 100%;
-                    bottom: 100%;
-                    // background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/domain-divider-generic.webp);
-                    // background-position: top center;
-                    // background-size: 10rem;
-                    // background-repeat: no-repeat;
-                    pointer-events: none;
-                } */
-
-                .card-title-container {
-                    text-align: center;
-
-                    .card-title {
-                        letter-spacing: 0.00938em;
-                        position: relative;
-                        font-family: 'Signika';
-                        font-weight: 700;
-                        font-size: 0.55rem;
-                        padding: 0 0.5rem;
-                        text-transform: uppercase;
-                        margin: 0.3rem 0 0;
-                    }
-
-                    .card-subtitle {
-                        font-size: 0.4rem;
-                        margin-bottom: 0.1rem;
-                        
-                        p {
-                            margin-bottom: 0.1rem;
-                            font-weight: 600;
-                            font-size: 0.35rem;
-                        }
-                    }
-                }
-
-                .card-content {
-                    padding: 0 0.5rem;
-                    font-size: 0.4rem;
-
-                    .card-content-text {
-                        font-family: Barlow;
-                        font-style: normal;
-                        font-weight: 500;
-                        padding: 0.2rem;
-
-                        > div {
-                            padding: 0.2rem;
-                            margin: -0.2rem;
-                        }
-
-                        p {
-                            display: inline;
-                        }
-                    }
-
-                    ul {
-                        list-style: initial;
-                        padding: 0 0 0 1em;
-                        margin: 0 0 0 1em;
-                        font-style: italic;
-
-                        li p {
-                            margin: 0;
-                        }
-                    }
-
-                    p {
-                        margin-bottom: 0.25rem;
-
-                        &:not(:first-child) {
-                            margin-top: 0.25rem;
-                        }
-                    }
-                }
-            }
-
-            .card-footer {
-                flex: 0 0 auto;
-                display: flex;
-                gap: 0.25rem;
-                flex-wrap: wrap;
-                justify-content: center;
-                font-size: 0.375rem;
-                line-height: 0.375rem;
-                margin-top: 0.25rem;
-                padding: 0 0.5rem;
-                margin-top: auto;
-                color: black;
-
-                span {
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    padding: 1px 0.2rem;
-                    background: light-dark(var(--dark-15, #22222215), var(--beige-15, #efe6d815));
-                    border: 1px solid light-dark(var(--dark, #222222), var(--beige, #efe6d8));
-                    border-radius: 0.2rem;
-                }
-            }
-
-            &.card-arcana {
-                .card-top .card-top-left {
-                    background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-arcana.webp);
-                }
-
-                .card-bottom::before {
-                    background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/domain-divider-arcana.webp);
-                }
-            }
-
-            &.card-blade {
-                .card-top .card-top-left {
-                    background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-blade.webp);
-                }
-
-                .card-bottom::before {
-                    background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/domain-divider-blade.webp);
-                }
-            }
-
-            &.card-blood {
-                .card-top .card-top-left {
-                    background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-blood.webp);
-                }
-
-                .card-bottom::before {
-                    background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/domain-divider-blood.webp);
-                }
-            }
-
-            &.card-bone {
-                .card-top .card-top-left {
-                    background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-bone.webp);
-                }
-
-                .card-bottom::before {
-                    background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/domain-divider-bone.webp);
-                }
-            }
-
-            &.card-codex {
-                .card-top .card-top-left {
-                    background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-codex.webp);
-                }
-
-                .card-bottom::before {
-                    background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/domain-divider-codex.webp);
-                }
-            }
-
-            &.card-dread {
-                .card-top .card-top-left {
-                    background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-dread.webp);
-                }
-
-                .card-bottom::before {
-                    background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/domain-divider-dread.webp);
-                }
-            }
-
-            &.card-grace {
-                .card-top .card-top-left {
-                    background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-grace.webp);
-                }
-
-                .card-bottom::before {
-                    background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/domain-divider-grace.webp);
-                }
-            }
-
-            &.card-midnight {
-                .card-top .card-top-left {
-                    background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-midnight.webp);
-                }
-
-                .card-bottom::before {
-                    background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/domain-divider-midnight.webp);
-                }
-            }
-
-            &.card-sage {
-                .card-top .card-top-left {
-                    background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-sage.webp);
-                }
-
-                .card-bottom::before {
-                    background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/domain-divider-sage.webp);
-                }
-            }
-
-            &.card-splendor {
-                .card-top .card-top-left {
-                    background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-splendor.webp);
-                }
-
-                .card-bottom::before {
-                    background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/domain-divider-splendor.webp);
-                }
-            }
-
-            &.card-valor {
-                .card-top .card-top-left {
-                    background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-valor.webp);
-                }
-
-                .card-bottom::before {
-                    background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/domain-divider-valor.webp);
                 }
             }
 
@@ -590,256 +202,30 @@
                 pointer-events: auto;
             }
 
-            &.card-ancestry, &.card-community {
-                .card-bottom {
-                    &::after {
-                        color: black;
-                        left: unset;
-                        transform: unset;
-                        letter-spacing: 0.05rem;
-                    }
-                }
-            }
+            .hover-layout {
+                position: absolute;
+                inset: 3%;
+                z-index: 100;
+            }            
 
-            &.card-ancestry {
-                .card-bottom {
-                    &::before {
-                        background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/card-divider-ancestries.webp);
-                        background-size: 12rem;
-                        top: -0.8rem;
-                    }
-
-                    &::after {
-                        right: 0.25rem;
-                        top: 0.45rem;
-                        font-family: "Overpass";
-                        text-transform: uppercase;
-                        width: 2.5rem;
-                        font-size: 0.325rem;
-                        line-height: 1;
-                    }
-
-                    .card-title {
-                        text-align: left;
-
-                        &::before {
-                            content: "";
-                            float: right;
-                            width: 2.75rem;
-                            height: 1em;
-                            margin-right: -0.25rem;
-                        }
-                    }
-                }
-            }
-
-            &.card-community {
-                .card-bottom {
-                    &::before {
-                        background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/card-divider-communities.webp);
-                        top: -2.25rem;
-                    }
-
-                    &::after {
-                        right: 0.9rem;
-                        top: -0.85rem;
-                        font-family: "Overpass";
-                        text-transform: uppercase;
-                        width: 2.4rem;
-                    }
-                }
-            }
-
-            &.card-class, &.card-subclass, &.card-feature {
-                &.card-assassin {
-                    .card-bottom {
-                        &::before {
-                            background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/subclass-divider-assassin.webp);
-                        }
-                    }
-                }
-                &.card-bard {
-                    .card-bottom {
-                        &::before {
-                            background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/subclass-divider-bard.webp);
-                        }
-                    }
-                }
-                &.card-bloodhunter {
-                    .card-bottom {
-                        &::before {
-                            background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/subclass-divider-blood-hunter.webp);
-                        }
-                    }
-                }
-                &.card-brawler {
-                    .card-bottom {
-                        &::before {
-                            background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/subclass-divider-brawler.webp);
-                        }
-                    }
-                }
-                &.card-druid {
-                    .card-bottom {
-                        &::before {
-                            background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/subclass-divider-druid.webp);
-                        }
-                    }
-                }
-                &.card-guardian {
-                    .card-bottom {
-                        &::before {
-                            background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/subclass-divider-guardian.webp);
-                        }
-                    }
-                }
-                &.card-ranger {
-                    .card-bottom {
-                        &::before {
-                            background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/subclass-divider-ranger.webp);
-                        }
-                    }
-                }
-                &.card-rogue {
-                    .card-bottom {
-                        &::before {
-                            background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/subclass-divider-rogue.webp);
-                        }
-                    }
-                }
-                &.card-seraph {
-                    .card-bottom {
-                        &::before {
-                            background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/subclass-divider-seraph.webp);
-                        }
-                    }
-                }
-                &.card-sorcerer {
-                    .card-bottom {
-                        &::before {
-                            background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/subclass-divider-sorcerer.webp);
-                        }
-                    }
-                }
-                &.card-warlock {
-                    .card-bottom {
-                        &::before {
-                            background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/subclass-divider-warlock.webp);
-                        }
-                    }
-                }
-                &.card-warrior {
-                    .card-bottom {
-                        &::before {
-                            background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/subclass-divider-warrior.webp);
-                        }
-                    }
-                }
-                &.card-witch {
-                    .card-bottom {
-                        &::before {
-                            background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/subclass-divider-witch.webp);
-                        }
-                    }
-                }
-                &.card-wizard {
-                    .card-bottom {
-                        &::before {
-                            background-image: url(/modules/daggerheart-card-deck-hud/assets/dividers/subclass-divider-wizard.webp);
-                        }
-                    }
-                }
-            }
-
-            &.card-class, &.card-subclass {
-                .card-bottom {
-                    &::after {
-                        display: none;
-                    }
-                }
-            }
-
-            &.card-subclass {
-                &.card-assassin {
-                    .card-top .card-top-left {
-                        background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-assassin.webp);
-                    }
-                }
-                &.card-bard {
-                    .card-top .card-top-left {
-                        background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-bard.webp);
-                    }
-                }
-                &.card-bloodhunter {
-                    .card-top .card-top-left {
-                        background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-bloodhunter.webp);
-                    }
-                }
-                &.card-brawler {
-                    .card-top .card-top-left {
-                        background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-brawler.webp);
-                    }
-                }
-                &.card-druid {
-                    .card-top .card-top-left {
-                        background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-druid.webp);
-                    }
-                }
-                &.card-guardian {
-                    .card-top .card-top-left {
-                        background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-guardian.webp);
-                    }
-                }
-                &.card-ranger {
-                    .card-top .card-top-left {
-                        background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-ranger.webp);
-                    }
-                }
-                &.card-rogue {
-                    .card-top .card-top-left {
-                        background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-rogue.webp);
-                    }
-                }
-                &.card-seraph {
-                    .card-top .card-top-left {
-                        background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-seraph.webp);
-                    }
-                }
-                &.card-sorcerer {
-                    .card-top .card-top-left {
-                        background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-sorcerer.webp);
-                    }
-                }
-                &.card-warlock {
-                    .card-top .card-top-left {
-                        background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-warlock.webp);
-                    }
-                }
-                &.card-warrior {
-                    .card-top .card-top-left {
-                        background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-warrior.webp);
-                    }
-                }
-                &.card-witch {
-                    .card-top .card-top-left {
-                        background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-witch.webp);
-                    }
-                }
-                &.card-wizard {
-                    .card-top .card-top-left {
-                        background-image: url(/modules/daggerheart-card-deck-hud/assets/banners/banner-wizard.webp);
-                    }
-                }
-
-                .card-bottom {
-                    &::after {
-                        display: none;
-                    }
-                }
+            &[data-locked="true"] .dh-card::after {
+                content: '\f023';
+                font-family: var(--fa-family,var(--fa-style-family,"Font Awesome 7 Pro"));
+                font-weight: var(--fa-style, 900);
+                position: absolute;
+                inset: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 3rem;
+                background-color: rgba(0, 0, 0, 0.5);
+                border-radius: inherit;
+                z-index: 100;
+                cursor: not-allowed;
             }
         }
 
-        .dh-card {
+        .dh-card-wrapper {
             --hover-y: 0px;
             --hover-scale: 1;
             --card-scale: 1;
@@ -867,56 +253,42 @@
             }
         }
 
-        .card {
-            --hover-y: 0px;
-            --hover-scale: 1;
-            --card-scale: 1;
-            
-            position: absolute;
-            left: 50%;
-            top: 0;
-            transform-origin: center bottom;
-            transform:
-                translateX(var(--translate-x))
-                translateY(calc(var(--translate-y) + var(--hover-y)))
-                rotate(var(--rotate))
-                scale(calc(var(--card-scale) * var(--hover-scale)));
-            z-index: var(--base-z);
-            transition:
-                transform 0.2s ease,
-                top 0.2s ease,
-                bottom 0.2s ease,
-                left 0.2s ease,
-                box-shadow 0.2s ease;
-            isolation: isolate;
-            
-            .card-top-left {
-                transform: translateZ(0);
-            }
-        }
+        .dh-card {
+            cursor: pointer;
+            border-color: 1px solid light-dark(var(--dark-blue, #18162e), var(--golden, #f3c267));
 
-        &.flat {
-            .card {
-                --translate-y: 0px !important;
-                --rotate: 0deg !important;
+            .recall-cost {
+                --border-size: calc(var(--width) * 0.066);
             }
-        }
 
-        &.beastform {
-            .card.card-spell .card-container::after {
-                content: '\f023';
-                font-family: var(--fa-family,var(--fa-style-family,"Font Awesome 7 Pro"));
-                font-weight: var(--fa-style, 900);
-                position: absolute;
-                inset: 0;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 3rem;
-                background-color: rgba(0, 0, 0, 0.5);
-                border-radius: inherit;
-                z-index: 100;
-                cursor: not-allowed;
+            > article {
+                section {
+                    &.description {
+                        .equipment-details {
+                            margin-bottom: 0.25rem;
+                        }
+
+                        .features {
+                            .item-description-container {
+                                display: flex;
+                                flex-direction: column;
+                                gap: 0.25rem;
+                            }
+                        }
+                    }
+                }
+            }
+
+            &.equipment, &.beastform {
+                .recall-cost {
+                    display: none;
+                }
+            }
+
+            &.beastform {
+                .domain-card-banner {
+                    display: none;
+                }
             }
         }
     }
@@ -952,6 +324,14 @@
             transition: transform 0.2s ease;
         }
 
+        .dh-cd-control-move {
+            cursor: grab;
+
+            &.active {
+                cursor: grabbing;
+            }
+        }
+
         .dh-cd-resources {
             display: flex;
             gap: 1rem;
@@ -972,7 +352,6 @@
             }
 
             .dh-cd-player-img {
-                // height: 100%;
                 aspect-ratio: 1;
                 position: relative;
                 cursor: pointer;
@@ -1016,14 +395,20 @@
                 }
             }
         }
+
+        &[data-menu-open] {
+            .dh-cd-control-settings-menu {
+                display: flex;
+            }
+        }
     }
 
     .dh-cd-control-settings-menu {
-        display: flex;
+        display: none;
         flex-direction: column;
         position: absolute;
         left: 100%;
-        bottom: var(--margin-bottom);
+        bottom: 0;
         background-color: #18162e;
         padding: 0.5rem 1rem;
         font-size: var(--font-size-16);
@@ -1042,6 +427,24 @@
             gap: 1rem;
             cursor: pointer;
             pointer-events: auto;
+            padding: 0.25rem 0;
+
+            &:not(:first-child) {
+                padding-top: 0.25rem;
+            }
+
+            &:not(:last-child) {
+                border-bottom: 1px dashed;
+                padding-bottom: 0.25rem;
+            }
+
+            span {
+                flex: 1;
+            }
+
+            i {
+                cursor: move;
+            }
         }
     }
 }

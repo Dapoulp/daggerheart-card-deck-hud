@@ -1,4 +1,5 @@
 import { MODULE_ID } from "../system/constants";
+import FeatureSelectionDialog from "./feature-selection-dialog";
 
 const embedTemplates = new Map([
     ['class', 'systems/daggerheart/templates/components/card/subclass.hbs'],
@@ -6,11 +7,31 @@ const embedTemplates = new Map([
     ['default', 'systems/daggerheart/templates/components/card/domain.hbs']
 ]);
 
-export default class Card {
+export default class DHCard {
+    #selected = false;
+    features = [];
+
     constructor(item, index) {
+        this.id = foundry.utils.randomID();
         this.item = item;
         this.index = index;
         this.selected = false;
+        // this.element = this.toEmbed();
+        this.element = null;
+    }
+
+    get selected() {
+        return this.#selected;
+    }
+
+    set selected(value) {
+        value = Boolean(value);
+
+        if (this.#selected === value) return;
+
+        this.#selected = value;
+        this.element?.classList.toggle("selected", value);
+        if(!value) this.element?.classList.remove("show-actions");
     }
 
     get cardWidth() {
@@ -20,31 +41,63 @@ export default class Card {
         ) * parseFloat(getComputedStyle(document.documentElement).fontSize);
     }
 
+    get actor() {
+        return this.item.actor;
+    }
+
+    get isLocked() {
+        return this.actor.system.activeBeastform && ((this.item.type === 'weapon' && this.item.id !== this.actor.system.attack.id) || this.item.system?.type === "spell");
+    }
+
+    static async create(item, index) {
+        const card = new this(item, index);
+        card.attachFeatures();
+        card.element = await card.toEmbed();
+        card.templateData = {
+            path: item.system.constructor.embedTemplate ?? embedTemplates[item.type] ?? embedTemplates['default'],
+            description: ''
+        }
+        return card;
+    }
+
     async toEmbed() {
         let embed = (await this.item.system?.toEmbed?.()) ?? await this.simulateToEmbed();
         if(!embed) return;
         embed = embed instanceof HTMLCollection ? embed[0] : embed;        
-        if(this.item.sourceUuid === "Compendium.daggerheart.ancestries.Item.ed8BoLR4SHOpeV00") this.removePurposefulNote(embed);
-        embed.setAttribute('data-item-id', this.item.uuid);
-        embed.setAttribute("data-action", "selectCard");
-        embed.style = this.getCardStyle(embedCards.length, index, game.settings.get(MODULE_ID, "frontPosition"));
-        if(game.settings.get(MODULE_ID, "hideDescription")) embed.classList.add('description-hidden');
+        if(this.item.sourceUuid === "Compendium.daggerheart.ancestries.Item.ed8BoLR4SHOpeV00") this.processExtraTweaks(embed);
 
-        return embed;
+        return await this.addWrapper(embed);
+        // return embed;
     }
 
-    removePurposefulNote(embed) {
+    processExtraTweaks(embed) {
         const purposefulDesc = embed.querySelector('.item-description-inner-container p');
         const purposefulBr = embed.querySelector('.item-description-inner-container p br');
         purposefulDesc?.remove();
         purposefulBr?.remove();
     }
 
+    async addWrapper(card) {
+        const wrapper = document.createElement("div");
+        wrapper.classList.add("dh-card-wrapper");
+        wrapper.dataset.cardId = this.id;
+        wrapper.setAttribute('data-item-id', this.item.uuid);
+        wrapper.setAttribute("data-action", "useCard");
+        wrapper.setAttribute("data-locked", !!this.isLocked);
+
+        const buttons = await this.addButtons();
+        const hoverLayout = this.addHoverLayout();
+
+        wrapper.append(card, ...buttons, hoverLayout);
+
+        return wrapper;
+    }
+
     async simulateToEmbed() {
         // const description = await item.system.getEnrichedDescription({ ...options, gmNotes: false, type: 'tooltip' });
         let item = this.item;
         let description = item.system.description ?? '';
-        const embedTemplate = item.system?.constructor?.embedTemplate ?? embedTemplates.get(item.type) ?? embedTemplates.get('default');
+        const embedTemplate = item.system.constructor?.embedTemplate ?? embedTemplates.get(item.type) ?? embedTemplates.get('default');
 
         // Specific type datas
         let extraDatas = {};
@@ -113,10 +166,9 @@ export default class Card {
                 break;
             default:
                 extraDatas = {
-                    domain: {color: '#666666'},                         //, label: _loc('DAGGERHEART.GENERAL.Tiers.singular')
+                    domain: {color: '#666666', label: _loc(`TYPES.Item.${item.type}`), src: item.system.constructor.DEFAULT_ICON},                         //, label: _loc('DAGGERHEART.GENERAL.Tiers.singular') // _loc(item.system.constructor.metadata.label)
                     cardType: { label: `TYPES.Item.${item.type}` }
                 };
-                item = foundry.utils.mergeObject(item, { system: { level: item.system.tier } });
                 classe = 'equipment';
                 if(item.effects.size) {
                     description += '<div class="features item-description-outer-container"><div class="item-description-container">';
@@ -129,12 +181,10 @@ export default class Card {
         }
 
         // Construct features
-        const attachedFeatures = this.getItemFeatures().map(f => f.uuid);
-        if(attachedFeatures.length) {
-            const features = item.actor.items.filter(i => attachedFeatures.includes(i.sourceUuid));
+        if(this.features.length) {
             description += '<div class="features item-description-outer-container"><div class="item-description-container">';
             if(item.type === 'beastform' && Object.keys(item.system.advantageOn).length) description += `<div class="feature item-description-inner-container"><b>${_loc('DAGGERHEART.ITEMS.Beastform.FIELDS.advantageOn.label')}:</b> ${Object.values(item.system.advantageOn).map(a => a.value).join(', ')}</div>`;
-            description += features.map(f => `<div class="feature item-description-inner-container"><strong>${f.name}:</strong> ${f.system.description}</div>`).join('');
+            description += this.features.map(f => `<div class="feature item-description-inner-container"><strong>${f.name}:</strong> ${f.system.description}</div>`).join('');
             description += '</div></div>';
         }
 
@@ -150,7 +200,30 @@ export default class Card {
         const element = container.querySelector("div.dh-card");
         if(classe) element.classList.add(classe);
 
-        return container.children;
+        return element;
+    }
+
+    async addButtons() {
+        const buttonsContent = await foundry.applications.handlebars.renderTemplate(
+            "modules/daggerheart-card-deck-hud/templates/card-buttons.hbs",
+            { type: this.item.type, inVault: this.item.system.inVault }
+        );
+
+        const buttonsContainer = document.createElement("div");
+        buttonsContainer.innerHTML = buttonsContent;
+
+        return buttonsContainer.children;
+    }
+
+    addHoverLayout() {
+        const hoverLayout = document.createElement("div");
+        hoverLayout.classList.add('hover-layout');
+        return hoverLayout;
+    }
+
+    attachFeatures() {
+        const features = this.getItemFeatures().map(f => f.uuid);
+        if(features.length) this.features = this.actor.items.filter(i => features.includes(i.sourceUuid));
     }
 
     getItemFeatures() {
@@ -167,15 +240,7 @@ export default class Card {
             case 'community':
                 return item.system.features.map(f => ({ _id: f._id, uuid: f.uuid, originName: item.name}));
             case 'subclass':
-                /* const foundationFeatures = item.system.foundationFeatures.map(f => ({ _id: f._id, uuid: f.uuid, type: 'foundation', originName: item.name}));
-                const specializationFeatures = item.featureState >= 2 ? item.system.specializationFeatures.map(f => ({ _id: f._id, uuid: f.uuid, type: 'specialization', originName: item.name})) : [];
-                const masteryFeatures = item.featureState >= 3 ? item.system.masteryFeatures.map(f => ({ _id: f._id, uuid: f.uuid, type: 'mastery', originName: item.name})) : []; */
-                /* const foundationFeatures = item.system.foundationFeatures.filter(i => item.actor.system.isItemAvailable(item.actor.items.get(i._id)));
-                const specializationFeatures = item.system.specializationFeatures.filter(i => item.actor.system.isItemAvailable(item.actor.items.get(i._id)));
-                const masteryFeatures = item.system.masteryFeatures.filter(i => item.actor.system.isItemAvailable(item.actor.items.get(i._id)));
-                return [...foundationFeatures, ...specializationFeatures, ...masteryFeatures]; */
                 return item.featureList;
-                // return item.system.itemFeatures.filter(f => item.actor.system.isItemAvailable(item.actor.items.get(f.id)));
             case 'beastform':
                 return item.features
             default:
@@ -183,47 +248,27 @@ export default class Card {
         }
     }
 
-    getCardStyle(count, index, frontCardPosition = "last") {
-        const spacing = game.settings.get(MODULE_ID, "cardOverlap") ?? 55;
-        
-        // 1. On fixe la référence sur une main idéale (ex: 10 cartes)
-        const referenceCount = 10;
-        const maxRotation = 14;
-        const referenceCenter = (referenceCount - 1) / 2; // 4.5
-
-        const center = (count - 1) / 2;
-        const offset = index - center;
-
-        // 2. On calcule la position basée sur l'écart fixe de la main de référence
-        const referenceNormalized = offset / referenceCenter;
-
-        const translateX = offset * spacing - this.cardWidth / 2;
-        
-        // 3. La rotation et la courbe utilisent la même référence constante
-        const translateY = Math.abs(referenceNormalized) ** 2 * 45;
-        const rotate = referenceNormalized * maxRotation;
-        
-        const baseZ = this.getCardZIndex(count, index, frontCardPosition);
-
-        return [
-            `--translate-x: ${translateX}px`,
-            `--translate-y: ${translateY}px`,
-            `--rotate: ${rotate}deg`,
-            `--base-z: ${baseZ}`
-        ].join("; ");
+    toggleSelected() {
+        this.selected = !this.selected;
     }
 
-    getCardZIndex(count, index, position) {
-        switch (position) {
-            case "first":
-                return count - index;
-            case "middle": {
-                const middle = Math.floor((count - 1) / 2);
-                return count - Math.abs(index - middle);
-            }
-            case "last":
-            default:
-                return index + 1;
+    async use(event) {
+        const directAction = game.settings.get(MODULE_ID, "directAction");
+
+        if(this.item.system?.actionsList) this.item.use(event);
+        else if(this.item.id === this.actor.system.attack?.id) this.actor.system.attack.use(event);
+        else {
+            const count = this.features.reduce((acc, feature) => acc + (feature.system.actions.size > 0 ? 1 : 0), 0);
+            if(count) {
+                let feature = this.features.find(f => f.system.actions.size);
+                if(count > 1 && !event?.shiftKey) {
+                    // Feature Selection Dialog
+                    feature = await FeatureSelectionDialog.create(this, event);
+                }
+                if(feature) feature.use(event);
+            } else ui.notifications.warn('DHDECKCARD.ERRORS.NoUse');
         }
+
+        if(this.selected) this.selected = false;
     }
 }
