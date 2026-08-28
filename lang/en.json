@@ -49,7 +49,8 @@
                 "options": {
                     "left": "Left",
                     "center": "Center",
-                    "right": "Right"
+                    "right": "Right",
+                    "custom": "Free"
                 }
             },
             "DeckBorderMargin": {
@@ -71,6 +72,18 @@
             "HideDescription": {
                 "label": "Hide Card description",
                 "hint": "Hide card description but keep features & actions."
+            },
+            "CardGradient": {
+                "label": "Card Gradient Fade",
+                "hint": "Fade partially cards when not hovered. 0 to disable the fade."
+            },
+            "InvertGradient": {
+                "label": "Invert Card Gradient Fade",
+                "hint": "Fade cards from bottom to top."
+            },
+            "HoverY": {
+                "label": "Card Hover movement",
+                "hint": "Control how much card top slide when hovered."
             }
         },
         "GENERAL": {
@@ -80,6 +93,12 @@
                 "primary": "Primary",
                 "secondary": "Secondary"
             }
+        },
+        "DIALOG": {
+            "selectFeature": "Feature Selection"
+        },
+        "ERRORS": {
+            "NoUse": "No Action or Feature attached to this card."
         }
     }
 }

@@ -1,7 +1,11 @@
 <div class="dh-cd-control-settings-menu">
     {{#each itemTypes}}
-        <label>
-            {{label}}
+        <label
+            draggable="true"
+            data-type="{{type}}"
+        >
+            <i class="fa-solid fa-ellipsis-vertical"></i>
+            <span>{{label}}</span>
             <input
                 type="checkbox"
                 data-type="{{type}}"
