@@ -133,7 +133,10 @@ export default class DHDeck {
                 attack: action,
                 description,
                 burden: "oneHanded",
-                tier: 0
+                tier: 0,
+                constructor: {
+                    DEFAULT_ICON: `modules/${MODULE_ID}/assets/icons/${this.actor.system.activeBeastform ? 'paw-solid-full.svg' : 'hand-fist-solid-full.svg'}`
+                }
             }
         }
     }
