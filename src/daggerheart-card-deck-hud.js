@@ -87,7 +87,6 @@ Hooks.on("renderSettingsConfig", (app, html) => {
 
     // Deck Border Margin Live Update
     const borderSlider = html.querySelector('range-picker[name="daggerheart-card-deck-hud.deckBorderMargin"]');
-    // if (!borderSlider) return;
 
     borderSlider?.addEventListener("input", event => {
         const deckBorderMargin = Number(event.target.value);
@@ -97,7 +96,6 @@ Hooks.on("renderSettingsConfig", (app, html) => {
 
     // Deck Bottom Margin Live Update
     const bottomSlider = html.querySelector('range-picker[name="daggerheart-card-deck-hud.deckBottomMargin"]');
-    // if (!bottomSlider) return;
 
     bottomSlider?.addEventListener("input", event => {
         const deckBottomMargin = Number(event.target.value);
@@ -107,7 +105,6 @@ Hooks.on("renderSettingsConfig", (app, html) => {
 
     // Deck Between Margin Live Update
     const betweenSlider = html.querySelector('range-picker[name="daggerheart-card-deck-hud.deckBetweenMargin"]');
-    // if (!bottomSlider) return;
 
     betweenSlider?.addEventListener("input", event => {
         const deckBetweenMargin = Number(event.target.value);
@@ -117,7 +114,6 @@ Hooks.on("renderSettingsConfig", (app, html) => {
 
     // Card Overlap Live Update
     const overlapSlider = html.querySelector('range-picker[name="daggerheart-card-deck-hud.cardOverlap"]');
-    // if (!overlapSlider) return;
 
     overlapSlider?.addEventListener("input", event => {
         const value = Number(event.target.value);
@@ -128,7 +124,6 @@ Hooks.on("renderSettingsConfig", (app, html) => {
 
     // Card Overlap Live Update
     const widthSlider = html.querySelector('range-picker[name="daggerheart-card-deck-hud.cardWidth"]');
-    // if (!widthSlider) return;
 
     widthSlider?.addEventListener("input", event => {
         const value = Number(event.target.value);
