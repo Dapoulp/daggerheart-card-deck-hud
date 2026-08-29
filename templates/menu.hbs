@@ -3,6 +3,7 @@
         <label
             draggable="true"
             data-type="{{type}}"
+            {{#if (or (and (eq @root.characterType 'environment') (eq type 'weapon')) (and (ne @root.characterType 'environment') (eq type 'potentialAdversaries')))}}hidden{{/if}}
         >
             <i class="fa-solid fa-ellipsis-vertical"></i>
             <span>{{label}}</span>

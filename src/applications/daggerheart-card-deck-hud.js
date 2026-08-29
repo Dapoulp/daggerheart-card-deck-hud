@@ -309,6 +309,7 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         context.itemTypes = this.deck.itemTypes;
         context.isFreePositioning = game.settings.get(MODULE_ID, "deckPosition") === 'custom';
         context.isCharacter = this.isCharacter;
+        context.characterType = this.#actor.type;
         if(this.isCharacter) {
             context.isVault = this.deck.isVault;
             context.hasVaultCards = this.#actor.system.domainCards.vault.length > 0;
@@ -365,22 +366,15 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     async _saveItemTypes() {
-        const itemTypes = [
-            ...this.parts.controls.querySelectorAll(
-                ".dh-cd-control-settings-menu label"
-            )
-        ].map(label => ({
+        const itemTypes = [...this.parts.controls.querySelectorAll(".dh-cd-control-settings-menu label")]
+        .map(label => ({
             type: label.dataset.type,
             active: label.querySelector('input[type="checkbox"]').checked
         }));
 
         this.deck.itemTypes = itemTypes;
 
-        await game.settings.set(
-            "daggerheart-card-deck-hud",
-            "itemTypes",
-            itemTypes
-        );
+        await game.settings.set(MODULE_ID, this.deck.itemTypesSetting, itemTypes);
     }
 
     static #useCard(event, target) {

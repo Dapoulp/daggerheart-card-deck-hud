@@ -43,6 +43,10 @@ export default class DHDeck {
         }, []);
     }
 
+    get itemTypesSetting() {
+        return this.actor.type === 'character' ? 'itemTypes' : 'itemTypesNPC';
+    }
+
     static async create(actor, parent) {
         const deck = new this(actor, parent);
         await deck.createCards();
@@ -84,10 +88,6 @@ export default class DHDeck {
             const consumable = this.actor.items.filter(item => item.type === 'consumable');
             const loot = this.actor.items.filter(item => item.type === 'loot');
 
-            const order = new Map(
-                this.itemTypes.map((itemType, index) => [itemType.type, index])
-            );
-
             items.push(...[
                 ...loot,
                 ...consumable,
@@ -102,21 +102,22 @@ export default class DHDeck {
                 ...beastform,
                 primaryWeapon,
                 secondaryWeapon
-            ]
+            ]);
+        } else {
+            items.push(...this.actor.items);
+            if(this.actor.system.attack) items.push(this.simulateUnarmedCard());
+        }
+
+        const order = new Map(this.itemTypes.map((itemType, index) => [itemType.type, index]));
+
+        return items
             .filter(item => Boolean(item) && this.activeTypes.includes(item.type))
             .sort((a, b) => {
                 const aIndex = order.get(a.type) ?? Infinity;
                 const bIndex = order.get(b.type) ?? Infinity;
 
                 return aIndex - bIndex;
-            }));
-        } else {
-            items.push(...this.actor.items);
-            if(this.actor.system.attack) items.push(this.simulateUnarmedCard());
-            console.log(this.actor.items)
-        }
-
-        return items;
+            });
     }
 
     getSubclassCards(item) {
@@ -229,15 +230,14 @@ export default class DHDeck {
     }
 
     _getItemTypes() {
-        const typesSetting = game.settings.get("daggerheart-card-deck-hud", "itemTypes");
-        const defaultOrder = typesSetting.length ? typesSetting : this._getItemTypesDefaultOrder().map(type => ({ type, label: _loc(`TYPES.Item.${type}`), active: !['loot', 'consumable'].includes(type) })).sort((a, b) => a.label.localeCompare(b.label));
+        const typesSetting = game.settings.get("daggerheart-card-deck-hud", this.itemTypesSetting);
+        const defaultOrder = typesSetting.length ? typesSetting : this._getItemTypesDefaultOrder().map(type => ({ type, label: _loc(this._getTypeLabel(type)), active: !['loot', 'consumable'].includes(type) })).sort((a, b) => a.label.localeCompare(b.label));
         const typesMap = new Map(defaultOrder.map(item => [item.type, item]));
 
-        const itemTypes = Item.TYPES
-            .filter(type => !["base", "feature"].includes(type))
+        const itemTypes = this._getItemTypesDefaultOrder()
             .map(type => ({
                 type,
-                label: _loc(`TYPES.Item.${type}`),
+                label: _loc(this._getTypeLabel(type)),
                 active: typesMap.get(type)?.active ?? type !== "loot"
             }));
 
@@ -253,9 +253,15 @@ export default class DHDeck {
     }
 
     _getItemTypesDefaultOrder() {
+        if(this.actor.type !== 'character') return ['feature', 'potentialAdversaries', 'weapon'];
         const knownTypes = ['ancestry', 'community', 'class', 'subclass', 'domainCard', 'beastform', 'consumable', 'loot', 'armor', 'weapon'];
-        knownTypes.push(...Item.TYPES.filter(type => !knownTypes.includes(type)));
+        knownTypes.push(...Item.TYPES.filter(type => !knownTypes.includes(type) && !["base", "feature"].includes(type)));
         return knownTypes;
+    }
+
+    _getTypeLabel(type) {
+        if(type === 'potentialAdversaries') return 'DAGGERHEART.GENERAL.Tabs.potentialAdversaries';
+        return `TYPES.Item.${type}`;
     }
 
     _setDeckSize() {

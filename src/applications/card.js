@@ -144,7 +144,7 @@ export default class DHCard {
                 break;
             case 'feature':
                 extraDatas = {
-                    domain: {color: '#0032b1'},
+                    domain: {color: '#00288f'},
                     cardType: { label: `DAGGERHEART.CONFIG.FeatureForm.${item.system.featureForm}` }
                 };
                 classe = 'feature';

@@ -423,9 +423,14 @@
                 padding-top: 0.25rem;
             }
 
-            &:not(:last-child) {
+            &:not([hidden]) {
                 border-bottom: 1px dashed;
                 padding-bottom: 0.25rem;
+            }
+
+            &:not([hidden]):not(:has(~ label:not([hidden]))) {
+                border-bottom: none;
+                padding-bottom: 0;
             }
 
             span {

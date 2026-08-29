@@ -1,4 +1,4 @@
-<div class="dh-cd-controls">
+<div class="dh-cd-controls" data-character-type="{{characterType}}">
     {{#if isCharacter}}
     <button type="button" class="dh-cd-control-switch" data-action="toggleVault"{{#if (and (not hasVaultCards) (not isVault))}} disabled{{/if}}>
         {{ifThen isVault "Vault" "Loadout"}}
