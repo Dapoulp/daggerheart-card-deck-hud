@@ -88,6 +88,7 @@
         },
         "GENERAL": {
             "NoAction": "-- No Action --",
+            "NoDesc": "No description",
             "UseAction": "Use Action",
             "Tags": {
                 "primary": "Primary",
