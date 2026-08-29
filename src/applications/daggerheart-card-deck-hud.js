@@ -245,12 +245,14 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         };
     }
 
-    updateMarginPosition(deckBorderMargin, deckBottomMargin) {
+    updateMarginPosition({ deckBorderMargin, deckBottomMargin, deckBetweenMargin }={}) {
         if(!this.element) return;
         deckBorderMargin ??= game.settings.get(MODULE_ID, "deckBorderMargin");
         deckBottomMargin ??= game.settings.get(MODULE_ID, "deckBottomMargin");
+        deckBetweenMargin ??= game.settings.get(MODULE_ID, "deckBetweenMargin");
         this.element.style.setProperty("--borderMargin", `${deckBorderMargin}px`);
         this.element.style.setProperty("--bottomMargin", `${deckBottomMargin}px`);
+        this.element.style.setProperty("--betweenMargin", `${deckBetweenMargin}px`);
     }
 
     async setActor(actor, token = null) {
