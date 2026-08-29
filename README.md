@@ -31,7 +31,7 @@ Below few examples:
 
 Manifest URL: https://github.com/Dapoulp/daggerheart-card-deck-hud/releases/latest/download/module.json
 
-### Requierments
+### Requirements
 
 - Foundry v14+
 - Daggerheart system
