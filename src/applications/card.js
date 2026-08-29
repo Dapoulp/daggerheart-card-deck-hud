@@ -16,7 +16,6 @@ export default class DHCard {
         this.item = item;
         this.index = index;
         this.selected = false;
-        // this.element = this.toEmbed();
         this.element = null;
     }
 
@@ -67,7 +66,6 @@ export default class DHCard {
         if(this.item.sourceUuid === "Compendium.daggerheart.ancestries.Item.ed8BoLR4SHOpeV00") this.processExtraTweaks(embed);
 
         return await this.addWrapper(embed);
-        // return embed;
     }
 
     processExtraTweaks(embed) {

@@ -183,16 +183,16 @@ export default class DHDeck {
         const center = (count - 1) / 2;
         const offset = index - center;
 
-        // -1 à +1 quelle que soit la taille de la main
+        // -1 à +1 whatever deck size is
         const normalized = count > 1
             ? offset / center
             : 0;
         
-        // Position horizontale
+        // Horizontal positioning
         const translateX =
             offset * spacing - this.cardWith / 2;
 
-        // Courbe verticale
+        // Vertical curve
         const translateY =
             Math.abs(normalized) ** 2 * maxCurve;
 

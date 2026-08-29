@@ -47,35 +47,6 @@ async function refreshHUD(actor) {
 
 Hooks.on("controlToken", debouncedControl);
 
-/* Hooks.on("updateActor", async (actor, changes) => {
-    if (changes.system) return;
-    // if (!(changes.system || changes.prototypeToken)) return;
-    //  || game.settings.get(MODULE_ID, "hideResource")
-
-    const hud = DHCardDeckHUD.instance;
-
-    if (!hud || hud.actor?.id !== actor.id) return;
-
-    await hud.render();
-});
-
-Hooks.on("createItem", async item => {
-    await refreshHUD(item.actor);
-});
-
-Hooks.on("updateItem", async item => {
-    await refreshHUD(item.actor);
-});
-
-Hooks.on("deleteItem", async item => {
-    await refreshHUD(item.actor);
-});
-
-Hooks.on("deleteActiveEffect", async effect => {
-    await refreshHUD(effect.actor);
-}); */
-
-
 Hooks.on("updateActor", debouncedUpdate);
 Hooks.on("createItem", debouncedUpdate);
 Hooks.on("updateItem", debouncedUpdate);

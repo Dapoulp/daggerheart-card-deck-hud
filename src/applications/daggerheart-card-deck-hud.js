@@ -223,7 +223,6 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     getDeckBounds() {
-        // const cards = [...this.element.querySelectorAll(".dh-cd-cards .card")];
         const cards = [...this.element.querySelectorAll(".dh-cd-cards .dh-card")];
 
         if (!cards.length) return;
@@ -277,12 +276,6 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         this.deck = await DHDeck.create(this.#actor, this);
         await this.render({ parts: ["deck", "controls"] });
     }
-
-    // async _prepareContext(options) {
-    //     const context = await super._prepareContext(options);
-    //     if(!this.#actor) return context;
-    //     return context;
-    // }
 
     /* -------------------------------------------- */
 
@@ -395,10 +388,8 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     static _unselectCard(event, force = false) {
-        // const selectedCard = DHCardDeckHUD.instance.element.querySelector(".card.selected");
         const selectedCard = DHCardDeckHUD.instance.element.querySelector(".dh-card.selected");
         if ((selectedCard && !selectedCard.contains(event.target)) || force) {
-            // DHCardDeckHUD.instance.element.querySelectorAll('.card.selected')
             DHCardDeckHUD.instance.element.querySelectorAll('.dh-card.selected')
                 .forEach(c => {
                     c.classList.remove('show-actions');
@@ -419,7 +410,6 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         const { itemId } = target.closest('[data-item-id').dataset;
         const item = fromUuidSync(itemId);
         if(!item) return;
-        // await item.update({ 'system.inVault': false });
         const actorLoadout = item.actor.system.loadoutSlot;
         if (actorLoadout.available) return item.update({ 'system.inVault': false });
         ui.notifications.warn(game.i18n.localize('DAGGERHEART.UI.Notifications.loadoutMaxReached'));
