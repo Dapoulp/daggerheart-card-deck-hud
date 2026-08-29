@@ -88,6 +88,10 @@
             "HoverY": {
                 "label": "Card Hover movement",
                 "hint": "Control how much card top slide when hovered."
+            },
+            "AutoHide": {
+                "label": "Auto Hide Deck",
+                "hint": "Automatically hide the deck when not hovered."
             }
         },
         "GENERAL": {

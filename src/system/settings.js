@@ -35,6 +35,16 @@ export function registerSettings() {
         onChange: (value) => DHCardDeckHUD.instance?.parts?.deck?.classList.toggle('description-hidden', value)
     });
 
+    game.settings.register(MODULE_ID, "autoHide", {
+        name: "DHDECKCARD.SETTINGS.AutoHide.label",
+        hint: "DHDECKCARD.SETTINGS.AutoHide.hint",
+        scope: 'client',
+        config: true,
+        type: Boolean,
+        default: false,
+        onChange: (value) => DHCardDeckHUD.instance?.parts?.deck?.classList.toggle('auto-hide', value)
+    });
+
     game.settings.register(MODULE_ID, "cardWidth", {
         name: "Card Width",
         scope: "client",
