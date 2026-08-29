@@ -63,50 +63,60 @@ export default class DHDeck {
     }
 
     getItems() {
-        if(this.isVault) return this.actor.system.domainCards.vault;
+        const items = [];
+        
+        if(this.actor.type === 'character') {
+            if(this.isVault) return this.actor.system.domainCards.vault;
 
-        const isBeastform = this.actor.system.activeBeastform;
+            const isBeastform = this.actor.system.activeBeastform;
 
-        const primaryClass = this.actor.system.class.value;
-        const primarySubclass = this.getSubclassCards(this.actor.system.class.subclass);
-        const secondaryClass = this.actor.system.multiclass.value;
-        const secondarySubclass = this.getSubclassCards(this.actor.system.multiclass.subclass);
-        const domainCards = this.actor.system.domainCards.loadout;
-        const ancestry = this.actor.system.ancestry;
-        const community = this.actor.system.community;
-        const armor = this.actor.system.armor;
-        const beastform = isBeastform ? this.getBeastformCard() : [];
-        const primaryWeapon = isBeastform || !this.actor.system.primaryWeapon ? this.simulateUnarmedCard() : this.actor.system.primaryWeapon;
-        const secondaryWeapon = isBeastform ? null : this.actor.system.secondaryWeapon;
-        const consumable = this.actor.items.filter(item => item.type === 'consumable');
-        const loot = this.actor.items.filter(item => item.type === 'loot');
+            const primaryClass = this.actor.system.class.value;
+            const primarySubclass = this.getSubclassCards(this.actor.system.class.subclass);
+            const secondaryClass = this.actor.system.multiclass.value;
+            const secondarySubclass = this.getSubclassCards(this.actor.system.multiclass.subclass);
+            const domainCards = this.actor.system.domainCards.loadout;
+            const ancestry = this.actor.system.ancestry;
+            const community = this.actor.system.community;
+            const armor = this.actor.system.armor;
+            const beastform = isBeastform ? this.getBeastformCard() : [];
+            const primaryWeapon = isBeastform || !this.actor.system.primaryWeapon ? this.simulateUnarmedCard() : this.actor.system.primaryWeapon;
+            const secondaryWeapon = isBeastform ? null : this.actor.system.secondaryWeapon;
+            const consumable = this.actor.items.filter(item => item.type === 'consumable');
+            const loot = this.actor.items.filter(item => item.type === 'loot');
 
-        const order = new Map(
-            this.itemTypes.map((itemType, index) => [itemType.type, index])
-        );
+            const order = new Map(
+                this.itemTypes.map((itemType, index) => [itemType.type, index])
+            );
 
-        return [
-            ...loot,
-            ...consumable,
-            ancestry,
-            community,
-            primaryClass,
-            ...primarySubclass,
-            secondaryClass,
-            ...secondarySubclass,
-            ...domainCards,
-            armor,
-            ...beastform,
-            primaryWeapon,
-            secondaryWeapon
-        ]
-        .filter(item => Boolean(item) && this.activeTypes.includes(item.type))
-        .sort((a, b) => {
-            const aIndex = order.get(a.type) ?? Infinity;
-            const bIndex = order.get(b.type) ?? Infinity;
+            items.push(...[
+                ...loot,
+                ...consumable,
+                ancestry,
+                community,
+                primaryClass,
+                ...primarySubclass,
+                secondaryClass,
+                ...secondarySubclass,
+                ...domainCards,
+                armor,
+                ...beastform,
+                primaryWeapon,
+                secondaryWeapon
+            ]
+            .filter(item => Boolean(item) && this.activeTypes.includes(item.type))
+            .sort((a, b) => {
+                const aIndex = order.get(a.type) ?? Infinity;
+                const bIndex = order.get(b.type) ?? Infinity;
 
-            return aIndex - bIndex;
-        });
+                return aIndex - bIndex;
+            }));
+        } else {
+            items.push(...this.actor.items);
+            if(this.actor.system.attack) items.push(this.simulateUnarmedCard());
+            console.log(this.actor.items)
+        }
+
+        return items;
     }
 
     getSubclassCards(item) {

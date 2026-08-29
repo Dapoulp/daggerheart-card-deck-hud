@@ -93,6 +93,10 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         return this.#token;
     }
 
+    get isCharacter() {
+        return !!this.actor.type === 'character';
+    }
+
     /** @override */
     async _insertElement(element, options) {
         const uiBottom = document.querySelector("#ui-bottom");
@@ -295,9 +299,12 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
 
     _prepareControlsContext(context, options) {
         context.itemTypes = this.deck.itemTypes;
-        context.isVault = this.deck.isVault;
-        context.hasVaultCards = this.#actor.system.domainCards.vault.length > 0;
         context.isFreePositioning = game.settings.get(MODULE_ID, "deckPosition") === 'custom';
+        context.isCharacter = this.isCharacter;
+        if(this.isCharacter) {
+            context.isVault = this.deck.isVault;
+            context.hasVaultCards = this.#actor.system.domainCards.vault.length > 0;
+        }
         return context;
     }
 

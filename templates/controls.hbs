@@ -1,7 +1,9 @@
 <div class="dh-cd-controls">
+    {{#if isCharacter}}
     <button type="button" class="dh-cd-control-switch" data-action="toggleVault"{{#if (and (not hasVaultCards) (not isVault))}} disabled{{/if}}>
         {{ifThen isVault "Vault" "Loadout"}}
     </button>
+    {{/if}}
     {{#if isFreePositioning}}
     <button type="button" class="dh-cd-control-move">
         <i class="fa-solid fa-up-down-left-right"></i>
