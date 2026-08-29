@@ -138,6 +138,21 @@ export function registerSettings() {
         onChange: value => DHCardDeckHUD.instance?.parts?.deck?.style.setProperty("--hover-y-value", `${value * -1}rem`)
     });
     
+    game.settings.register(MODULE_ID, 'selectedCardScale', {
+        name: "DHDECKCARD.SETTINGS.SelectedCardScale.label",
+        hint: "DHDECKCARD.SETTINGS.SelectedCardScale.hint",
+        scope: 'client',
+        config: true,
+        type: Number,
+        range: {
+            min: 1,
+            max: 5,
+            step: 0.25
+        },
+        default: 1.5,
+        onChange: value => DHCardDeckHUD.instance?.parts?.deck?.style.setProperty("--selected-scale", `${value}`)
+    });
+    
     game.settings.register(MODULE_ID, 'deckBorderMargin', {
         name: "DHDECKCARD.SETTINGS.DeckBorderMargin.label",
         hint: "DHDECKCARD.SETTINGS.DeckBorderMargin.hint",
