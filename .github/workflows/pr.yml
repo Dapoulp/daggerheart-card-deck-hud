@@ -1,0 +1,61 @@
+name: Update PR description
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+permissions:
+  pull-requests: write
+
+jobs:
+  update-description:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Update commits section
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+
+            const { data: commits } =
+              await github.rest.pulls.listCommits({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                per_page: 100
+              });
+
+            const commitMessages = commits
+              .map(commit => commit.commit.message.split("\n")[0])
+              .map(message => `- ${message}`)
+              .join("\n");
+
+            const startMarker = "<!-- AUTO-COMMITS -->";
+            const endMarker = "<!-- END-AUTO-COMMITS -->";
+
+            const commitsSection =
+              `${startMarker}\n${commitMessages}\n${endMarker}`;
+
+            let body = pr.body || "";
+
+            const startIndex = body.indexOf(startMarker);
+            const endIndex = body.indexOf(endMarker);
+
+            if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+              body =
+                body.substring(0, startIndex) +
+                commitsSection +
+                body.substring(endIndex + endMarker.length);
+            } else {
+              body += `\n\n## Commits\n\n${commitsSection}`;
+            }
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              body
+            });
