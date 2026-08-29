@@ -83,6 +83,7 @@ Hooks.on("deleteItem", debouncedUpdate);
 Hooks.on("deleteActiveEffect", debouncedUpdate);
 
 Hooks.on("renderSettingsConfig", (app, html) => {
+    // Adding some stuff to test PR action workflow
     if(!DHCardDeckHUD.instance) return;
 
     // Deck Border Margin Live Update
