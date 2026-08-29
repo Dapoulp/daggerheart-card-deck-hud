@@ -94,56 +94,34 @@ export default class DHCard {
     }
 
     async simulateToEmbed() {
-        // const description = await item.system.getEnrichedDescription({ ...options, gmNotes: false, type: 'tooltip' });
         let item = this.item;
-        let description = item.system.description ?? '';
+
         const embedTemplate = item.system.constructor?.embedTemplate ?? embedTemplates.get(item.type) ?? embedTemplates.get('default');
+        const desc = item.system.description ?? null;
+        const props = [];
+        const features = [];
+        
+        if(['armor', 'weapon'].includes(item.type)) {
+            props.push({ label: 'Tier', value: item.system.tier });
+            props.push(...(item.type === 'armor' ? 
+                [
+                    { label: 'Base Score', value: `${item.system.armor.current} / ${item.system.armor.max}` },
+                    { label: 'Base Thresholds', value: `${item.system.baseThresholds.major} / ${item.system.baseThresholds.severe}` }
+                ]
+                : [
+                    { label: 'Trait', value: _loc(`DAGGERHEART.CONFIG.Traits.${item.system.attack.roll.trait}.name`) },
+                    { label: 'Damage', value: Roll.replaceFormulaData(item.system.attack.damage.main.value.getFormula(), item.actor.getRollData()) },
+                    { label: 'Burden', value: _loc(`DAGGERHEART.CONFIG.Burden.${item.system.burden}`) },
+                    { label: 'Type', value: item.system.secondary ? _loc("DHDECKCARD.GENERAL.Tags.secondary") : _loc("DHDECKCARD.GENERAL.Tags.primary") },
+                    { label: 'Range', value: _loc(`DAGGERHEART.CONFIG.Range.${item.system.attack.range}.name`) }
+                ]
+            ));
+        };
 
         // Specific type datas
         let extraDatas = {};
         let classe;
-        
-        switch (item.type) {
-            case 'weapon':
-                const trait = _loc(`DAGGERHEART.CONFIG.Traits.${item.system.attack.roll.trait}.name`);
-                const damage = Roll.replaceFormulaData(item.system.attack.damage.main.value.getFormula(), item.actor.getRollData());
-                description += `<div class="equipment-details">
-                    <div>
-                        <strong>Tier:</strong> ${item.system.tier}
-                    </div>
-                    <div>
-                        <strong>Trait:</strong> ${trait}
-                    </div>
-                    <div>
-                        <strong>Damage:</strong> ${damage}
-                    </div>
-                    <div>
-                        <strong>Burden:</strong> ${_loc(`DAGGERHEART.CONFIG.Burden.${item.system.burden}`)}
-                    </div>
-                    <div>
-                        <strong>Type:</strong> ${item.system.secondary
-                            ? _loc("DHDECKCARD.GENERAL.Tags.secondary")
-                            : _loc("DHDECKCARD.GENERAL.Tags.primary")}
-                    </div>
-                    <div>
-                        <strong>Range:</strong> ${_loc(`DAGGERHEART.CONFIG.Range.${item.system.attack.range}.name`)}
-                    </div>
-                </div>`;
-                break;
-            case 'armor':
-                description += `<div class="equipment-details">
-                    <div>
-                        <strong>Tier:</strong> ${item.system.tier}
-                    </div>
-                    <div>
-                        <b>Base Score:</b> ${item.system.armor.current} / ${item.system.armor.max}
-                    </div>
-                    <div>
-                        <b>Base Thresholds:</b> ${item.system.baseThresholds.major} / ${item.system.baseThresholds.severe}
-                    </div>
-                </div>`;
-                break;
-        }
+
         switch (item.type) {
             case 'class':
                 classe = "class";
@@ -170,29 +148,16 @@ export default class DHCard {
                     cardType: { label: `TYPES.Item.${item.type}` }
                 };
                 classe = 'equipment';
-                if(item.effects.size) {
-                    description += '<div class="features item-description-outer-container"><div class="item-description-container">';
-                    for(const effect of item.effects) {
-                        description += `<div class="feature item-description-inner-container"><strong>${effect.name}: </strong>${effect.description}</div>`
-                    }
-                    description += '</div></div>';
-                }
+                if(item.effects.size) features.push(...item.effects.map(effect => ({ label: effect.name, value: effect.description })));
                 break;
         }
 
-        // Construct features
-        if(this.features.length) {
-            description += '<div class="features item-description-outer-container"><div class="item-description-container">';
-            if(item.type === 'beastform' && Object.keys(item.system.advantageOn).length) description += `<div class="feature item-description-inner-container"><b>${_loc('DAGGERHEART.ITEMS.Beastform.FIELDS.advantageOn.label')}:</b> ${Object.values(item.system.advantageOn).map(a => a.value).join(', ')}</div>`;
-            description += this.features.map(f => `<div class="feature item-description-inner-container"><strong>${f.name}:</strong> ${f.system.description}</div>`).join('');
-            description += '</div></div>';
-        }
-
-        console.log(description)
+        if(item.type === 'beastform' && Object.keys(item.system.advantageOn).length) features.push({ label: _loc('DAGGERHEART.ITEMS.Beastform.FIELDS.advantageOn.label'), value: Object.values(item.system.advantageOn).map(a => a.value).join(', ') });
+        if(this.features.length) features.push(...this.features.map(feature => ({ label: feature.name, value: feature.system.description })));
 
         const content = await foundry.applications.handlebars.renderTemplate(embedTemplate, {
             item,
-            description,
+            description: this.createDescription({desc, props, features}),
             ...extraDatas
         });
         
@@ -203,6 +168,43 @@ export default class DHCard {
         if(classe) element.classList.add(classe);
 
         return element;
+    }
+
+    createDescription({ desc=null, props= [], features=[] }={}) {
+        const descContainer = document.createElement('div');
+
+        // Description
+        if(desc) descContainer.innerHTML = desc;
+
+        // Equipment properties
+        if(props.length) {
+            const propsContainer = document.createElement('div');
+            propsContainer.classList.add('equipment-details');
+            for(const prop of props) {
+                const propContainer = document.createElement('div');
+                propContainer.innerHTML = `<strong>${prop.label}:</strong> ${prop.value}`;
+                propsContainer.append(propContainer);
+            }
+            descContainer.append(propsContainer);
+        }
+
+        // Features
+        if(features.length) {
+            const featuresContainer = document.createElement('div');
+            featuresContainer.classList.add('features', 'item-description-outer-container');
+            const itemContainer = document.createElement('div');
+            itemContainer.classList.add('item-description-container');
+            for(const feature of features) {
+                const featureContainer = document.createElement('div');
+                featureContainer.classList.add('feature', 'item-description-inner-container');
+                featureContainer.innerHTML = `<strong>${feature.label}:</strong> ${feature.value}`;
+                itemContainer.append(featureContainer);
+            }
+            featuresContainer.append(itemContainer);
+            descContainer.append(featuresContainer);
+        }
+
+        return descContainer.innerHTML;
     }
 
     async addButtons() {
