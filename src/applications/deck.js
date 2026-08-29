@@ -29,6 +29,7 @@ export default class DHDeck {
         if(!!this.actor.system.activeBeastform) classes.push('beastform');
         if(game.settings.get(MODULE_ID, "hideDescription")) classes.push('description-hidden');
         if(game.settings.get(MODULE_ID, "invertGradient")) classes.push('invert-gradient');
+        if(game.settings.get(MODULE_ID, "autoHide")) classes.push('auto-hide');
         return classes;
     }
 

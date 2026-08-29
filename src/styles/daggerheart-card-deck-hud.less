@@ -9,7 +9,7 @@
 
     display: flex;
     flex-direction: column;
-    align-items: center;
+    // align-items: center;
     z-index: 100;
     pointer-events: none;
     position: relative;
@@ -84,6 +84,10 @@
         padding-right: calc(12px - var(--scrollbar-width)) !important;
     }
 
+    &:not(:has(.dh-cd-cards:hover, .dh-cd-controls:hover)) .enfant1.auto-hide {
+        opacity: 0;
+    }
+
     .dh-cd-cards {
         --card-width: 10rem;
         --card-height: calc(var(--card-width) * 7 / 5);
@@ -91,9 +95,10 @@
         
         position: relative;
         margin-bottom: var(--betweenMargin);
+        opacity: 1;
 
         transform: translateY(var(--dh-cd-hide-offset, 0px));
-        transition: transform 0.3s ease, height 0.3s ease, top 0.3s ease;
+        transition: transform 0.2s ease, height 0.3s ease, top 0.3s ease, opacity 0.5s ease-in;
 
         &.flat {
             height: calc(var(--card-height) + 20px);
@@ -120,6 +125,15 @@
             max-height: calc(var(--height) * 0.65);
         }
 
+        &.auto-hide {
+            &:not(:hover):not(:has(+ .dh-cd-controls:hover)) {
+                opacity: 0;
+            }
+        }
+        // &.auto-hide:not(:hover):not(:has(+ .enfant2:hover)) {
+        //     opacity: 0;
+        // }
+
         &:not(:hover) {
             .dh-card:not(.selected) {
                 mask-image: linear-gradient(
@@ -129,6 +143,10 @@
                     transparent var(--card-gradient)
                 );
             }
+
+            // &.auto-hide {
+            //     opacity: 0;
+            // }
         }
 
         &.invert-gradient {
@@ -290,6 +308,9 @@
         z-index: 100;
         position: relative;
         height: auto;
+        min-width: 5rem;
+        width: 100%;
+        justify-content: center;
 
         > * {
             transition: opacity 0.2s ease;
