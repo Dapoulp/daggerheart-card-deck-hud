@@ -16,6 +16,8 @@ It also create "card like style" for Items without a native one, like weapons, b
 - Domain Cards
 - Equipments (Weapons, Armor, etc)
 
+If a card got any actions or features attached to it, it's then clickable.
+
 ## Deck Customization
 
 The deck style can be customize in many ways.
