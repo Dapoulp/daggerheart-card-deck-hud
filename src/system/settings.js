@@ -32,7 +32,7 @@ export function registerSettings() {
         config: true,
         type: Boolean,
         default: false,
-        onChange: (value) => DHCardDeckHUD.instance?.render({ parts: ['deck'] })
+        onChange: (value) => DHCardDeckHUD.instance?.parts?.deck?.classList.toggle('description-hidden', value)
     });
 
     game.settings.register(MODULE_ID, "cardWidth", {
