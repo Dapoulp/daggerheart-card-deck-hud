@@ -164,7 +164,7 @@ export default class DHCard {
 
         const content = await foundry.applications.handlebars.renderTemplate(embedTemplate, {
             item,
-            description: this.createDescription({desc, props, features}),
+            description: await this.createDescription({desc, props, features}),
             ...extraDatas
         });
         
@@ -177,7 +177,7 @@ export default class DHCard {
         return element;
     }
 
-    createDescription({ desc=null, props=[], features=[] }={}) {
+    async createDescription({ desc=null, props=[], features=[] }={}) {
         const descContainer = document.createElement('div');
 
         // Description
@@ -212,8 +212,14 @@ export default class DHCard {
             featuresContainer.append(itemContainer);
             descContainer.append(featuresContainer);
         }
+                
+        const enrichDesc = await foundry.applications.ux.TextEditor.implementation.enrichHTML(descContainer.innerHTML, {
+            relativeTo: this.actor,
+            rollData: this.actor.getRollData(),
+            secrets: this.actor.isOwner
+        });
 
-        return descContainer.innerHTML;
+        return enrichDesc;
     }
 
     async addButtons() {
