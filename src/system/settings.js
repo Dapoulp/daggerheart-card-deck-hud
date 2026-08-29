@@ -189,7 +189,14 @@ export function registerSettings() {
         onChange: value => DHCardDeckHUD.instance?.parts?.deck?.classList.toggle('invert-gradient', value)
     });
 
-    game.settings.register("daggerheart-card-deck-hud", "itemTypes", {
+    game.settings.register(MODULE_ID, "itemTypes", {
+        scope: "client",
+        config: false,
+        type: Array,
+        default: []
+    });
+
+    game.settings.register(MODULE_ID, "itemTypesNPC", {
         scope: "client",
         config: false,
         type: Array,

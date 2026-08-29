@@ -37,7 +37,8 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
             recall: this.#recall,
             sendToChat: this.#sendToChat,
             editItem: this.#editItem,
-            cancelBeastform: this.#cancelBeastform
+            cancelBeastform: this.#cancelBeastform,
+            copyUuid: this.#copyUuid
         }
     };
 
@@ -93,6 +94,10 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         return this.#token;
     }
 
+    get isCharacter() {
+        return !!this.actor.type === 'character';
+    }
+
     /** @override */
     async _insertElement(element, options) {
         const uiBottom = document.querySelector("#ui-bottom");
@@ -126,9 +131,9 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
 
         ["click", "contextmenu"].forEach(eventType => {
             document.addEventListener(eventType, event => {
-               if(this.deck?.cards) this._selectCard();
-               if(!this.parts.controls.hasAttribute('data-menu-open') || event.target.closest('.dh-cd-control-settings-menu')) return;
-               this._toggleMenu(event);
+                if(this.deck?.cards) this._selectCard();
+                if(!this.parts.controls.hasAttribute('data-menu-open') || event.target.closest('.dh-cd-control-settings-menu')) return;
+                this._toggleMenu(event);
             });
         });
     }
@@ -145,6 +150,13 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
                 card.element.addEventListener("contextmenu", event => {
                     event.preventDefault();
                     event.stopPropagation();
+                    
+                    if(event.target.closest('button[data-action="copyUuid"]')) {
+                        const label = _loc(card.item.constructor.metadata.label);
+                        game.clipboard.copyPlainText(card.item.id);
+                        return ui.notifications.info("DOCUMENT.IdCopiedClipboard", {format: {label, type: "ID", id: card.item.id}});
+                    }
+
                     this._selectCard(card);
                     if(this.parts.controls.hasAttribute('data-menu-open')) this._toggleMenu(event);
                 });
@@ -295,9 +307,13 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
 
     _prepareControlsContext(context, options) {
         context.itemTypes = this.deck.itemTypes;
-        context.isVault = this.deck.isVault;
-        context.hasVaultCards = this.#actor.system.domainCards.vault.length > 0;
         context.isFreePositioning = game.settings.get(MODULE_ID, "deckPosition") === 'custom';
+        context.isCharacter = this.isCharacter;
+        context.characterType = this.#actor.type;
+        if(this.isCharacter) {
+            context.isVault = this.deck.isVault;
+            context.hasVaultCards = this.#actor.system.domainCards.vault.length > 0;
+        }
         return context;
     }
 
@@ -350,22 +366,15 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     async _saveItemTypes() {
-        const itemTypes = [
-            ...this.parts.controls.querySelectorAll(
-                ".dh-cd-control-settings-menu label"
-            )
-        ].map(label => ({
+        const itemTypes = [...this.parts.controls.querySelectorAll(".dh-cd-control-settings-menu label")]
+        .map(label => ({
             type: label.dataset.type,
             active: label.querySelector('input[type="checkbox"]').checked
         }));
 
         this.deck.itemTypes = itemTypes;
 
-        await game.settings.set(
-            "daggerheart-card-deck-hud",
-            "itemTypes",
-            itemTypes
-        );
+        await game.settings.set(MODULE_ID, this.deck.itemTypesSetting, itemTypes);
     }
 
     static #useCard(event, target) {
@@ -416,6 +425,8 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     static #sendToChat(event, target) {
+        event.preventDefault();
+        event.stopPropagation();
         const { itemId } = target.closest('[data-item-id').dataset;
         const item = fromUuidSync(itemId);
         if(!item) return;
@@ -445,6 +456,17 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         const item = fromUuidSync(itemId);
         if(!item) return;
         item.delete();
+    }
+
+    static #copyUuid(event, target) {
+        event.preventDefault();
+        event.stopPropagation();
+        const { itemId } = target.closest('[data-item-id').dataset;
+        const item = fromUuidSync(itemId);
+        if(!item) return;
+        const label = _loc(item.constructor.metadata.label);
+        game.clipboard.copyPlainText(item.uuid);
+        ui.notifications.info("DOCUMENT.IdCopiedClipboard", {format: {label, type: "UUID", id: item.uuid}});
     }
 
     #onDragStart = event => {

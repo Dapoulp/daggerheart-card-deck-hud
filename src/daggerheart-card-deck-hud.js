@@ -22,7 +22,7 @@ const debouncedControl = foundry.utils.debounce(async (token, controlled) => {
 
     const controlledTokens = canvas.tokens?.controlled || [];
     
-    if (!controlled || !token?.actor || controlledTokens.length > 1 || token.actor.type !== 'character') {
+    if (!controlled || !token?.actor || controlledTokens.length > 1) {
         debouncedUpdate.cancel();
         await hud.clearActor();
         return;

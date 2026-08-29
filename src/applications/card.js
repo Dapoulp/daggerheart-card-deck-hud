@@ -102,18 +102,18 @@ export default class DHCard {
         const features = [];
         
         if(['armor', 'weapon'].includes(item.type)) {
-            props.push({ label: 'Tier', value: item.system.tier });
+            props.push({ label: 'DAGGERHEART.GENERAL.Tiers.singular', value: item.system.tier });
             props.push(...(item.type === 'armor' ? 
                 [
-                    { label: 'Base Score', value: `${item.system.armor.current} / ${item.system.armor.max}` },
-                    { label: 'Base Thresholds', value: `${item.system.baseThresholds.major} / ${item.system.baseThresholds.severe}` }
+                    { label: 'DAGGERHEART.ITEMS.Armor.baseScore', value: `${item.system.armor.current} / ${item.system.armor.max}` },
+                    { label: 'DAGGERHEART.ITEMS.Armor.baseThresholds.base', value: `${item.system.baseThresholds.major} / ${item.system.baseThresholds.severe}` }
                 ]
                 : [
-                    { label: 'Trait', value: _loc(`DAGGERHEART.CONFIG.Traits.${item.system.attack.roll.trait}.name`) },
-                    { label: 'Damage', value: Roll.replaceFormulaData(item.system.attack.damage.main.value.getFormula(), item.actor.getRollData()) },
-                    { label: 'Burden', value: _loc(`DAGGERHEART.CONFIG.Burden.${item.system.burden}`) },
-                    { label: 'Type', value: item.system.secondary ? _loc("DHDECKCARD.GENERAL.Tags.secondary") : _loc("DHDECKCARD.GENERAL.Tags.primary") },
-                    { label: 'Range', value: _loc(`DAGGERHEART.CONFIG.Range.${item.system.attack.range}.name`) }
+                    { label: 'DAGGERHEART.GENERAL.Trait.single', value: item.system.attack.roll.trait ? _loc(`DAGGERHEART.CONFIG.Traits.${item.system.attack.roll.trait}.name`) : null },
+                    { label: 'DAGGERHEART.GENERAL.damage', value: Roll.replaceFormulaData(item.system.attack.damage.main.value.getFormula(), item.actor.getRollData()) },
+                    { label: 'DAGGERHEART.GENERAL.burden', value: _loc(`DAGGERHEART.CONFIG.Burden.${item.system.burden}`) },
+                    { label: 'DAGGERHEART.GENERAL.type', value: item.system.secondary ? _loc("DHDECKCARD.GENERAL.Tags.secondary") : _loc("DHDECKCARD.GENERAL.Tags.primary") },
+                    { label: 'DAGGERHEART.GENERAL.range', value: _loc(`DAGGERHEART.CONFIG.Range.${item.system.attack.range}.name`) }
                 ]
             ));
         };
@@ -142,9 +142,17 @@ export default class DHCard {
                 };
                 classe = 'beastform';
                 break;
+            case 'feature':
+                extraDatas = {
+                    domain: {color: '#00288f'},
+                    cardType: { label: `DAGGERHEART.CONFIG.FeatureForm.${item.system.featureForm}` }
+                };
+                classe = 'feature';
+                if(item.effects.size) features.push(...item.effects.map(effect => ({ label: effect.name, value: effect.description })));
+                break;
             default:
                 extraDatas = {
-                    domain: {color: '#666666', label: _loc(`TYPES.Item.${item.type}`), src: item.system.constructor.DEFAULT_ICON},                         //, label: _loc('DAGGERHEART.GENERAL.Tiers.singular') // _loc(item.system.constructor.metadata.label)
+                    domain: {color: '#666666', label: _loc(`TYPES.Item.${item.type}`), src: item.system.constructor.DEFAULT_ICON},
                     cardType: { label: `TYPES.Item.${item.type}` }
                 };
                 classe = 'equipment';
@@ -154,6 +162,7 @@ export default class DHCard {
 
         if(item.type === 'beastform' && Object.keys(item.system.advantageOn).length) features.push({ label: _loc('DAGGERHEART.ITEMS.Beastform.FIELDS.advantageOn.label'), value: Object.values(item.system.advantageOn).map(a => a.value).join(', ') });
         if(this.features.length) features.push(...this.features.map(feature => ({ label: feature.name, value: feature.system.description })));
+        if(item.system.actions?.size) features.push(...item.system.actions.map(action => ({ label: action.name, value: action.description })));
 
         const content = await foundry.applications.handlebars.renderTemplate(embedTemplate, {
             item,
@@ -170,7 +179,7 @@ export default class DHCard {
         return element;
     }
 
-    createDescription({ desc=null, props= [], features=[] }={}) {
+    createDescription({ desc=null, props=[], features=[] }={}) {
         const descContainer = document.createElement('div');
 
         // Description
@@ -181,8 +190,9 @@ export default class DHCard {
             const propsContainer = document.createElement('div');
             propsContainer.classList.add('equipment-details');
             for(const prop of props) {
+                prop.value ||= _loc('DHDECKCARD.GENERAL.NoDesc');
                 const propContainer = document.createElement('div');
-                propContainer.innerHTML = `<strong>${prop.label}:</strong> ${prop.value}`;
+                propContainer.innerHTML = `<strong>${_loc(prop.label)}:</strong> ${prop.value}`;
                 propsContainer.append(propContainer);
             }
             descContainer.append(propsContainer);
@@ -195,6 +205,7 @@ export default class DHCard {
             const itemContainer = document.createElement('div');
             itemContainer.classList.add('item-description-container');
             for(const feature of features) {
+                feature.value ||= _loc('DHDECKCARD.GENERAL.NoDesc');
                 const featureContainer = document.createElement('div');
                 featureContainer.classList.add('feature', 'item-description-inner-container');
                 featureContainer.innerHTML = `<strong>${feature.label}:</strong> ${feature.value}`;

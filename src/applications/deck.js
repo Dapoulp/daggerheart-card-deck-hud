@@ -43,6 +43,10 @@ export default class DHDeck {
         }, []);
     }
 
+    get itemTypesSetting() {
+        return this.actor.type === 'character' ? 'itemTypes' : 'itemTypesNPC';
+    }
+
     static async create(actor, parent) {
         const deck = new this(actor, parent);
         await deck.createCards();
@@ -63,50 +67,57 @@ export default class DHDeck {
     }
 
     getItems() {
-        if(this.isVault) return this.actor.system.domainCards.vault;
+        const items = [];
+        
+        if(this.actor.type === 'character') {
+            if(this.isVault) return this.actor.system.domainCards.vault;
 
-        const isBeastform = this.actor.system.activeBeastform;
+            const isBeastform = this.actor.system.activeBeastform;
 
-        const primaryClass = this.actor.system.class.value;
-        const primarySubclass = this.getSubclassCards(this.actor.system.class.subclass);
-        const secondaryClass = this.actor.system.multiclass.value;
-        const secondarySubclass = this.getSubclassCards(this.actor.system.multiclass.subclass);
-        const domainCards = this.actor.system.domainCards.loadout;
-        const ancestry = this.actor.system.ancestry;
-        const community = this.actor.system.community;
-        const armor = this.actor.system.armor;
-        const beastform = isBeastform ? this.getBeastformCard() : [];
-        const primaryWeapon = isBeastform || !this.actor.system.primaryWeapon ? this.simulateUnarmedCard() : this.actor.system.primaryWeapon;
-        const secondaryWeapon = isBeastform ? null : this.actor.system.secondaryWeapon;
-        const consumable = this.actor.items.filter(item => item.type === 'consumable');
-        const loot = this.actor.items.filter(item => item.type === 'loot');
+            const primaryClass = this.actor.system.class.value;
+            const primarySubclass = this.getSubclassCards(this.actor.system.class.subclass);
+            const secondaryClass = this.actor.system.multiclass.value;
+            const secondarySubclass = this.getSubclassCards(this.actor.system.multiclass.subclass);
+            const domainCards = this.actor.system.domainCards.loadout;
+            const ancestry = this.actor.system.ancestry;
+            const community = this.actor.system.community;
+            const armor = this.actor.system.armor;
+            const beastform = isBeastform ? this.getBeastformCard() : [];
+            const primaryWeapon = isBeastform || !this.actor.system.primaryWeapon ? this.simulateUnarmedCard() : this.actor.system.primaryWeapon;
+            const secondaryWeapon = isBeastform ? null : this.actor.system.secondaryWeapon;
+            const consumable = this.actor.items.filter(item => item.type === 'consumable');
+            const loot = this.actor.items.filter(item => item.type === 'loot');
 
-        const order = new Map(
-            this.itemTypes.map((itemType, index) => [itemType.type, index])
-        );
+            items.push(...[
+                ...loot,
+                ...consumable,
+                ancestry,
+                community,
+                primaryClass,
+                ...primarySubclass,
+                secondaryClass,
+                ...secondarySubclass,
+                ...domainCards,
+                armor,
+                ...beastform,
+                primaryWeapon,
+                secondaryWeapon
+            ]);
+        } else {
+            items.push(...this.actor.items);
+            if(this.actor.system.attack) items.push(this.simulateUnarmedCard());
+        }
 
-        return [
-            ...loot,
-            ...consumable,
-            ancestry,
-            community,
-            primaryClass,
-            ...primarySubclass,
-            secondaryClass,
-            ...secondarySubclass,
-            ...domainCards,
-            armor,
-            ...beastform,
-            primaryWeapon,
-            secondaryWeapon
-        ]
-        .filter(item => Boolean(item) && this.activeTypes.includes(item.type))
-        .sort((a, b) => {
-            const aIndex = order.get(a.type) ?? Infinity;
-            const bIndex = order.get(b.type) ?? Infinity;
+        const order = new Map(this.itemTypes.map((itemType, index) => [itemType.type, index]));
 
-            return aIndex - bIndex;
-        });
+        return items
+            .filter(item => Boolean(item) && this.activeTypes.includes(item.type))
+            .sort((a, b) => {
+                const aIndex = order.get(a.type) ?? Infinity;
+                const bIndex = order.get(b.type) ?? Infinity;
+
+                return aIndex - bIndex;
+            });
     }
 
     getSubclassCards(item) {
@@ -219,15 +230,14 @@ export default class DHDeck {
     }
 
     _getItemTypes() {
-        const typesSetting = game.settings.get("daggerheart-card-deck-hud", "itemTypes");
-        const defaultOrder = typesSetting.length ? typesSetting : this._getItemTypesDefaultOrder().map(type => ({ type, label: _loc(`TYPES.Item.${type}`), active: !['loot', 'consumable'].includes(type) })).sort((a, b) => a.label.localeCompare(b.label));
+        const typesSetting = game.settings.get("daggerheart-card-deck-hud", this.itemTypesSetting);
+        const defaultOrder = typesSetting.length ? typesSetting : this._getItemTypesDefaultOrder().map(type => ({ type, label: _loc(this._getTypeLabel(type)), active: !['loot', 'consumable'].includes(type) })).sort((a, b) => a.label.localeCompare(b.label));
         const typesMap = new Map(defaultOrder.map(item => [item.type, item]));
 
-        const itemTypes = Item.TYPES
-            .filter(type => !["base", "feature"].includes(type))
+        const itemTypes = this._getItemTypesDefaultOrder()
             .map(type => ({
                 type,
-                label: _loc(`TYPES.Item.${type}`),
+                label: _loc(this._getTypeLabel(type)),
                 active: typesMap.get(type)?.active ?? type !== "loot"
             }));
 
@@ -243,9 +253,15 @@ export default class DHDeck {
     }
 
     _getItemTypesDefaultOrder() {
+        if(this.actor.type !== 'character') return ['feature', 'potentialAdversaries', 'weapon'];
         const knownTypes = ['ancestry', 'community', 'class', 'subclass', 'domainCard', 'beastform', 'consumable', 'loot', 'armor', 'weapon'];
-        knownTypes.push(...Item.TYPES.filter(type => !knownTypes.includes(type)));
+        knownTypes.push(...Item.TYPES.filter(type => !knownTypes.includes(type) && !["base", "feature"].includes(type)));
         return knownTypes;
+    }
+
+    _getTypeLabel(type) {
+        if(type === 'potentialAdversaries') return 'DAGGERHEART.GENERAL.Tabs.potentialAdversaries';
+        return `TYPES.Item.${type}`;
     }
 
     _setDeckSize() {
