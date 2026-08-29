@@ -100,7 +100,7 @@ export default class DHCard {
         const features = [];
         
         if(['armor', 'weapon'].includes(item.type)) {
-            props.push({ label: 'DAGGERHEART.GENERAL.Tiers.singular', value: item.system.tier });
+            if(item.system.tier) props.push({ label: 'DAGGERHEART.GENERAL.Tiers.singular', value: item.system.tier });
             props.push(...(item.type === 'armor' ? 
                 [
                     { label: 'DAGGERHEART.ITEMS.Armor.baseScore', value: `${item.system.armor.current} / ${item.system.armor.max}` },
@@ -196,7 +196,7 @@ export default class DHCard {
             descContainer.append(propsContainer);
         }
 
-        // Features
+        // Features & Actions
         if(features.length) {
             const featuresContainer = document.createElement('div');
             featuresContainer.classList.add('features', 'item-description-outer-container');
