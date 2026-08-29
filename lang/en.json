@@ -61,6 +61,10 @@
                 "label": "Bottom Margin",
                 "hint": "Space between the bottom and the deck."
             },
+            "DeckBetweenMargin": {
+                "label": "Between Margin",
+                "hint": "Space between the buttons and the deck."
+            },
             "PlayerToken": {
                 "label": "Use Character Token",
                 "hint": "Display Character Token picture instead of portrait."

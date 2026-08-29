@@ -90,8 +90,9 @@ Hooks.on("renderSettingsConfig", (app, html) => {
     // if (!borderSlider) return;
 
     borderSlider?.addEventListener("input", event => {
-        const value = Number(event.target.value);
-        DHCardDeckHUD.instance?.updateMarginPosition(value);
+        const deckBorderMargin = Number(event.target.value);
+        DHCardDeckHUD.instance?.updateMarginPosition({deckBorderMargin});
+        game.settings.set(MODULE_ID, "deckBorderMargin", deckBorderMargin);
     });
 
     // Deck Bottom Margin Live Update
@@ -99,8 +100,19 @@ Hooks.on("renderSettingsConfig", (app, html) => {
     // if (!bottomSlider) return;
 
     bottomSlider?.addEventListener("input", event => {
-        const value = Number(event.target.value);
-        DHCardDeckHUD.instance?.updateMarginPosition(null, value);
+        const deckBottomMargin = Number(event.target.value);
+        DHCardDeckHUD.instance?.updateMarginPosition({deckBottomMargin});
+        game.settings.set(MODULE_ID, "deckBottomMargin", deckBottomMargin);
+    });
+
+    // Deck Between Margin Live Update
+    const betweenSlider = html.querySelector('range-picker[name="daggerheart-card-deck-hud.deckBetweenMargin"]');
+    // if (!bottomSlider) return;
+
+    betweenSlider?.addEventListener("input", event => {
+        const deckBetweenMargin = Number(event.target.value);
+        DHCardDeckHUD.instance?.updateMarginPosition({deckBetweenMargin});
+        game.settings.set(MODULE_ID, "deckBetweenMargin", deckBetweenMargin);
     });
 
     // Card Overlap Live Update
@@ -111,7 +123,7 @@ Hooks.on("renderSettingsConfig", (app, html) => {
         const value = Number(event.target.value);
         DHCardDeckHUD.instance?.parts.deck?.setAttribute('data-card-overlap', value);
         DHCardDeckHUD.instance?.deck?.updateCardPosition();
-        game.settings.set(MODULE_ID, "cardOverlap", value)
+        game.settings.set(MODULE_ID, "cardOverlap", value);
     });
 
     // Card Overlap Live Update
@@ -121,7 +133,7 @@ Hooks.on("renderSettingsConfig", (app, html) => {
     widthSlider?.addEventListener("input", event => {
         const value = Number(event.target.value);
         DHCardDeckHUD.instance?.parts.deck?.setAttribute('data-card-width-coeff', value);
-        game.settings.set(MODULE_ID, "cardOverlap", value)
+        game.settings.set(MODULE_ID, "cardOverlap", value);
     });
 
     // Card Gradient Live Update
@@ -130,6 +142,6 @@ Hooks.on("renderSettingsConfig", (app, html) => {
     gradientSlider?.addEventListener("input", event => {
         const value = Number(event.target.value);
         DHCardDeckHUD.instance.deck?.applyGradient(value);
-        game.settings.set(MODULE_ID, "cardGradient", value)
+        game.settings.set(MODULE_ID, "cardGradient", value);
     });
 });

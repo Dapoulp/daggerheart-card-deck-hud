@@ -155,6 +155,20 @@ export function registerSettings() {
         },
         default: 0
     });
+    
+    game.settings.register(MODULE_ID, 'deckBetweenMargin', {
+        name: "DHDECKCARD.SETTINGS.DeckBetweenMargin.label",
+        hint: "DHDECKCARD.SETTINGS.DeckBetweenMargin.hint",
+        scope: 'client',
+        config: true,
+        type: Number,
+        range: {
+            min: -50,
+            max: 500,
+            step: 5
+        },
+        default: 0
+    });
 
     game.settings.register(MODULE_ID, "directAction", {
         name: "DHDECKCARD.SETTINGS.HideHotbar.label",
