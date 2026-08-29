@@ -70,6 +70,7 @@ jobs:
           cp -r dist/* release/
           cp -r lang release/
           cp -r templates release/
+          cp -r assets release/
 
         env:
           VERSION: ${{ steps.version.outputs.version }}
