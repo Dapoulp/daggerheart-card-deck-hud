@@ -95,7 +95,7 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     get isCharacter() {
-        return !!this.actor.type === 'character';
+        return this.actor.type === 'character';
     }
 
     /** @override */
@@ -168,6 +168,7 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
             }
             this.deck.applyGradient(game.settings.get(MODULE_ID, "cardGradient"));
             this.parts.deck.style.setProperty("--hover-y-value", `${game.settings.get(MODULE_ID, "hoverY") * -1}rem`);
+            this.parts.deck.style.setProperty("--selected-scale", `${game.settings.get(MODULE_ID, "selectedCardScale")}`);
         }
 
         this.updateMarginPosition();
@@ -309,6 +310,7 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
             context.isVault = this.deck.isVault;
             context.hasVaultCards = this.#actor.system.domainCards.vault.length > 0;
         }
+        console.log(context)
         return context;
     }
 

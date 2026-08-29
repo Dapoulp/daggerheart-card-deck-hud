@@ -92,6 +92,10 @@
             "AutoHide": {
                 "label": "Auto Hide Deck",
                 "hint": "Automatically hide the deck when not hovered."
+            },
+            "SelectedCardScale": {
+                "label": "Selected Card Scale",
+                "hint": "Control how much card size increases when selected."
             }
         },
         "GENERAL": {
