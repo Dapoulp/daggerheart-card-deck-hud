@@ -115,10 +115,18 @@
             }
         },
         "DIALOG": {
-            "selectFeature": "Feature Selection"
+            "selectFeature": "Feature Selection",
+            "selectAdversary": "Potential Adversaries"
         },
         "ERRORS": {
             "NoUse": "No Action or Feature attached to this card."
+        }
+    },
+    "DAGGERHEART": {
+        "CONFIG": {
+            "FeatureForm": {
+                "special": "Special"
+            }
         }
     }
 }

@@ -1,0 +1,17 @@
+<form id="item-action-select">
+    <header class="dialog-header">
+        <h1>{{name}}</h1>
+    </header>
+    {{#each adversaries as |category categoryId|}}
+        {{> 'daggerheart.inventory-items'
+        title=category.label
+        type='adversary'
+        isGlassy=true
+        isActor=true
+        categoryAdversary=categoryId
+        hideControls=true
+        collection=category.adversaries
+        hideResources=true
+        }}
+    {{/each}}
+</form>

@@ -166,6 +166,10 @@
                     --hover-scale: 1.1;
                     --base-z: 500 !important;
                 }
+
+                .dh-card-description {
+                    overflow: hidden;
+                }
             }
 
             &.selected {
@@ -296,6 +300,37 @@
             &.beastform, &.feature, &.transformation {
                 .domain-card-banner {
                     display: none;
+                }
+            }
+
+            .card-potential-fieldset {
+                    border-radius: 4px;
+                    margin: 0;
+                    align-items: unset;
+                    padding: 2px 2px 4px;
+
+                .card-potential-name {
+                    font-size: 1.25em;
+                    padding: 2px 4px 0;
+                    border-radius: 2px;
+                }
+
+                .card-potential-adversary {
+                    display: flex;
+                    flex-direction: row;
+                    align-items: center;
+                    gap: 0.25rem;
+                    margin: 0 0.25rem;
+
+                    img {
+                        height: 1rem;
+                        width: auto;
+                    }
+
+                    p {
+                        margin: 0;
+                        line-height: 1;
+                    }
                 }
             }
         }
