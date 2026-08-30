@@ -310,7 +310,6 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
             context.isVault = this.deck.isVault;
             context.hasVaultCards = this.#actor.system.domainCards.vault.length > 0;
         }
-        console.log(context)
         return context;
     }
 

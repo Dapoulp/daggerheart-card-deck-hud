@@ -98,6 +98,13 @@
                 "hint": "Control how much card size increases when selected."
             }
         },
+        "ACTOR": {
+            "Companion": {
+                "action": {
+                    "desc": "Make a <strong>Spellcast Roll</strong> to connect with your companion and command them to take action. <strong>Spend a Hope</strong> to add an applicable Companion Experience to the roll. On a success with Hope, if your next action builds on their success, you gain advantage on the roll."
+                }
+            }
+        },
         "GENERAL": {
             "NoAction": "-- No Action --",
             "NoDesc": "No description",
