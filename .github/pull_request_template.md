@@ -2,6 +2,11 @@
 
 <!-- Update Description -->
 
+## Related Issues
+
+Closes: #
+
+
 ## Commits
 
 <!-- AUTO-COMMITS -->
