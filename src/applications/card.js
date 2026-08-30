@@ -86,7 +86,7 @@ export default class DHCard {
         const buttons = await this.addButtons();
         const hoverLayout = this.addHoverLayout();
 
-        wrapper.append(card, ...buttons, hoverLayout);
+        wrapper.append(card, ...(this.item.noButton === true ? [] : buttons), hoverLayout);
 
         return wrapper;
     }
@@ -285,7 +285,7 @@ export default class DHCard {
                     feature = await FeatureSelectionDialog.create(this, event);
                 }
                 if(feature) feature.use(event);
-            } else ui.notifications.warn('DHDECKCARD.ERRORS.NoUse');
+            } else ui.notifications.warn('DHDECKCARD.ERRORS.NoUse', { localize: true });
         }
 
         if(this.selected) this.selected = false;

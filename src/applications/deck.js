@@ -57,6 +57,7 @@ export default class DHDeck {
 
     async createCards() {
         const items = this.getItems();
+        console.log(items)
         const entries = await Promise.all(
             items.map(async (item, index) => {
                 const card = await DHCard.create(item, index);
@@ -107,6 +108,7 @@ export default class DHDeck {
         } else {
             items.push(...this.actor.items);
             if(this.actor.system.attack) items.push(this.simulateUnarmedCard());
+            if(this.actor.type === "companion") items.push(this.simulateActionRollCard());
         }
 
         const order = new Map(this.itemTypes.map((itemType, index) => [itemType.type, index]));
@@ -141,6 +143,7 @@ export default class DHDeck {
             actor: action.actor,
             effects: [],
             uuid: action.id,
+            noButton: true,
             system: {
                 attack: action,
                 description,
@@ -149,6 +152,43 @@ export default class DHDeck {
                 constructor: {
                     DEFAULT_ICON: `modules/${MODULE_ID}/assets/icons/${this.actor.system.activeBeastform ? 'paw-solid-full.svg' : 'hand-fist-solid-full.svg'}`
                 }
+            }
+        }
+    }
+
+    simulateActionRollCard() {
+        return {
+            id: foundry.utils.randomID(),
+            name: _loc('DAGGERHEART.GENERAL.Roll.action'),
+            img: this.actor.img,
+            type: 'feature',
+            actor: this.actor,
+            effects: [],
+            noButton: true,
+            system: {
+                description: _loc('DHDECKCARD.ACTOR.Companion.action.desc'),
+                featureForm: 'action',
+                actionsList: []
+
+            },
+            use: async (event) => {
+                const companionSheet = game.system.api.applications.sheets.actors.Companion;
+                const partner = this.actor.system.partner;
+                if (!partner) return ui.notifications.warn('DAGGERHEART.UI.Notifications.partnerRequired');
+                const config = {
+                    event,
+                    title: `${game.i18n.localize('DAGGERHEART.GENERAL.Roll.action')}: ${this.actor.name}`,
+                    headerTitle: `Companion ${game.i18n.localize('DAGGERHEART.GENERAL.Roll.action')}`,
+                    roll: {
+                        trait: partner.system.spellcastModifierTrait?.key,
+                        companionRoll: true
+                    },
+                    hasRoll: true
+                };
+
+                const result = await partner.diceRoll(config);
+                companionSheet.prototype.consumeResource.call({ actor: this.actor }, result?.costs);
+                result?.resourceUpdates.updateResources();
             }
         }
     }
@@ -165,6 +205,7 @@ export default class DHDeck {
             effects: [],
             uuid,
             features,
+            noButton: true,
             system: {
                 advantageOn: this.actor.system.activeBeastform.system.advantageOn
             }
