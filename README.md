@@ -7,7 +7,7 @@ This module simulates the cards hand for the selected character, allowing you to
 
 It also create "card like style" for Items without a native one, like weapons, beastform, etc.
 
-## Item Types implemented
+## Item Types
 
 - Actor:
   - Ancestries
