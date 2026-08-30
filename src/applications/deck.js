@@ -10,14 +10,6 @@ export default class DHDeck {
         this.itemTypes = this._getItemTypes();
     }
 
-    get cardWith() {
-        return parseFloat(
-            getComputedStyle(document.documentElement)
-                .getPropertyValue("--dh-card-width")
-        ) * parseFloat(getComputedStyle(document.documentElement).fontSize);
-
-    }
-
     get size() {
         return this.cards.length;
     }
@@ -59,7 +51,7 @@ export default class DHDeck {
         const entries = await Promise.all(
             items.map(async (item, index) => {
                 const card = await DHCard.create(item, index);
-                card.element.style = this.getCardStyle(items.length, card.index, game.settings.get(MODULE_ID, "frontPosition"));
+                card.element.style = this.getCardStyle(items.length, card, game.settings.get(MODULE_ID, "frontPosition"));
                 return [ card.id, card ];
             })
         );
@@ -229,10 +221,11 @@ export default class DHDeck {
     }
 
     updateCardPosition() {
-        this.cards.forEach((card) => card.element.style = this.getCardStyle(this.cards.size, card.index, game.settings.get(MODULE_ID, "frontPosition")));
+        this.cards.forEach((card) => card.element.style = this.getCardStyle(this.cards.size, card, game.settings.get(MODULE_ID, "frontPosition")));
     }
 
-    getCardStyle(count, index, frontCardPosition = "last") {
+    getCardStyle(count, card, frontCardPosition = "last") {
+        const index = card.index;
         const spacing = this.element.dataset.cardOverlap || game.settings.get(MODULE_ID, "cardOverlap") || 55;
         const maxRotation = 14;
         const maxCurve = 45;
@@ -241,7 +234,7 @@ export default class DHDeck {
         const normalized = count > 1 ? offset / center : 0;
         
         // Horizontal positioning
-        const translateX = offset * spacing - this.cardWith / 2;
+        const translateX = offset * spacing - this.parent.cardWidth / 2;
 
         // Vertical curve
         const curveNormalized = count === 2 ? normalized * Math.sqrt(20 / maxCurve) : normalized;
@@ -344,5 +337,10 @@ export default class DHDeck {
 
         this.element.classList.remove("no-gradient");
         this.element.style.setProperty("--card-gradient", `${100 - value}%`);
+    }
+
+    setVarStyle() {
+        this.element.style.setProperty("--hover-y-value", `${game.settings.get(MODULE_ID, "hoverY") * -1}rem`);
+        this.element.style.setProperty("--selected-scale", `${game.settings.get(MODULE_ID, "selectedCardScale")}`);
     }
 }

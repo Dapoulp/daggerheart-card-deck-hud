@@ -33,13 +33,6 @@ export default class DHCard {
         if(!value) this.element?.classList.remove("show-actions");
     }
 
-    get cardWidth() {
-        return parseFloat(
-            getComputedStyle(document.documentElement)
-                .getPropertyValue("--dh-card-width")
-        ) * parseFloat(getComputedStyle(document.documentElement).fontSize);
-    }
-
     get actor() {
         return this.item.actor;
     }

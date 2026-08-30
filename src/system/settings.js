@@ -48,7 +48,7 @@ export function registerSettings() {
     game.settings.register(MODULE_ID, "cardWidth", {
         name: "Card Width",
         scope: "client",
-        config: false,
+        config: true,
         type: Number,
         default: 5,
         range: {

@@ -99,6 +99,10 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         return this.actor.type === 'character';
     }
 
+    get cardWidth() {
+        return 10 * parseFloat(getComputedStyle(document.documentElement).fontSize) * (game.settings.get(MODULE_ID, "cardWidth") / 5);
+    }
+
     /** @override */
     async _insertElement(element, options) {
         const uiBottom = document.querySelector("#ui-bottom");
@@ -129,6 +133,8 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
 
     async _onFirstRender(context, options) {
         await super._onFirstRender(context, options);        
+
+        this.element.style.setProperty("--card-width", `${this.cardWidth}px`);
 
         ["click", "contextmenu"].forEach(eventType => {
             document.addEventListener(eventType, event => {
@@ -168,8 +174,7 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
                 });
             }
             this.deck.applyGradient(game.settings.get(MODULE_ID, "cardGradient"));
-            this.parts.deck.style.setProperty("--hover-y-value", `${game.settings.get(MODULE_ID, "hoverY") * -1}rem`);
-            this.parts.deck.style.setProperty("--selected-scale", `${game.settings.get(MODULE_ID, "selectedCardScale")}`);
+            this.deck.setVarStyle();
         }
 
         this.updateMarginPosition();
@@ -277,7 +282,6 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         context.classes = this.deck.classes;
         context.cardCount = this.deck.cards.size;
         context.cardOverlap = game.settings.get(MODULE_ID, "cardOverlap") ?? 55;
-        context.cardWidthCoeff = game.settings.get(MODULE_ID, "cardWidth") ?? 5;
         return context;
     }
 
