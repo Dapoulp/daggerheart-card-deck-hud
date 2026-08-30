@@ -241,29 +241,20 @@ export default class DHDeck {
         const center = (count - 1) / 2;
         const offset = index - center;
 
-        // -1 à +1 whatever deck size is
-        const normalized = count > 1
-            ? offset / center
-            : 0;
+        const normalized = count > 1 ? offset / center : 0;
         
         // Horizontal positioning
-        const translateX =
-            offset * spacing - this.cardWith / 2;
+        const translateX = offset * spacing - this.cardWith / 2;
 
         // Vertical curve
-        const translateY =
-            Math.abs(normalized) ** 2 * maxCurve;
+        const curveNormalized = count === 2 ? normalized * Math.sqrt(20 / maxCurve) : normalized;
+
+        const translateY = curveNormalized ** 2 * maxCurve;
 
         // Rotation
-        const rotate =
-            normalized * maxRotation;
+        const rotate = normalized * maxRotation;
 
-        const baseZ =
-            this.getCardZIndex(
-                count,
-                index,
-                frontCardPosition
-            );
+        const baseZ = this.getCardZIndex(count, index, frontCardPosition);
 
         return [
             `--translate-x: ${translateX}px`,

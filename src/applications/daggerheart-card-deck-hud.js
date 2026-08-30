@@ -224,28 +224,6 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         } */
     }
 
-    getDeckBounds() {
-        const cards = [...this.element.querySelectorAll(".dh-cd-cards .dh-card")];
-
-        if (!cards.length) return;
-
-        const rects = cards.map(card => card.getBoundingClientRect());
-
-        const left = Math.min(...rects.map(rect => rect.left));
-        const right = Math.max(...rects.map(rect => rect.right));
-        const top = Math.min(...rects.map(rect => rect.top));
-        const bottom = Math.max(...rects.map(rect => rect.bottom));
-
-        return {
-            width: right - left,
-            height: bottom - top,
-            left,
-            right,
-            top,
-            bottom
-        };
-    }
-
     updateMarginPosition({ deckBorderMargin, deckBottomMargin, deckBetweenMargin }={}) {
         if(!this.element) return;
         deckBorderMargin ??= game.settings.get(MODULE_ID, "deckBorderMargin");

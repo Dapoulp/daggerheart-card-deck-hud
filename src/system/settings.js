@@ -91,6 +91,7 @@ export function registerSettings() {
         onChange: value => {
             const deckElement = DHCardDeckHUD.instance?.deck?.element;
             deckElement?.classList.toggle('flat', value === 'flat');
+            setTimeout(() => DHCardDeckHUD.instance?.deck?._setDeckSize(), 200);
         }
     });
     
