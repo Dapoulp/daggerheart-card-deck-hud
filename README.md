@@ -9,12 +9,24 @@ It also create "card like style" for Items without a native one, like weapons, b
 
 ## Item Types implemented
 
-- Ancestries
-- Communities
-- Classes
-- Subclasses (per rank)
-- Domain Cards
-- Equipments (Weapons, Armor, etc)
+- Actor:
+  - Ancestries
+  - Communities
+  - Classes
+  - Subclasses (per rank)
+  - Domain Cards
+  - Equipments (Weapons, Armor, etc)
+  - Base Attack
+  - Beastform
+- Adversary:
+  - Features
+  - Base Attack
+- Companion:
+  - Base Attack
+  - Action Roll
+- Environment:
+  - Features
+  - Potential Adversaries + Quick Drag&Drop Adversary dialog
 
 If a card got any actions or features attached to it, it's then clickable.
 
