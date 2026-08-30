@@ -8,6 +8,7 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
     deck = null;
     #dragData = null;
     #isCollapsed = false;
+    isVault = false;
 
     static DEFAULT_OPTIONS = {
         id: "dh-card-deck",
@@ -258,6 +259,7 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
     async setActor(actor, token = null) {
         this.#actor = actor;
         this.#token = token;
+        this.isVault = false;
 
         this.element.removeAttribute("hidden");
         
@@ -307,14 +309,14 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         context.isCharacter = this.isCharacter;
         context.characterType = this.#actor.type;
         if(this.isCharacter) {
-            context.isVault = this.deck.isVault;
+            context.isVault = this.isVault;
             context.hasVaultCards = this.#actor.system.domainCards.vault.length > 0;
         }
         return context;
     }
 
     static async #toggleVault() {
-        this.deck.isVault = !this.deck.isVault;
+        this.isVault = !this.isVault;
         await this.deck.createCards();
         await this.render({ parts: ["deck", "controls"] });
     }
@@ -402,19 +404,22 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
     static async #sendToVault(event, target) {
         const { itemId } = target.closest('[data-item-id').dataset;
         const item = fromUuidSync(itemId);
-        if(!item) return;
-        await item.update({ 'system.inVault': true });
-        this.render();
+        if(!item && !(typeof item.system?.toggleVault === 'function')) return;
+        await item.system.toggleVault(event, true, false);
     }
 
     static async #sendToLoadout(event, target) {
         const { itemId } = target.closest('[data-item-id').dataset;
         const item = fromUuidSync(itemId);
-        if(!item) return;
-        const actorLoadout = item.actor.system.loadoutSlot;
-        if (actorLoadout.available) return item.update({ 'system.inVault': false });
-        ui.notifications.warn(game.i18n.localize('DAGGERHEART.UI.Notifications.loadoutMaxReached'));
-        this.render();
+        if(!item && !(typeof item.system?.toggleVault === 'function')) return;
+        await item.system.toggleVault(event, false, false);
+    }
+
+    static async #recall(event, target) {
+        const { itemId } = target.closest('[data-item-id').dataset;
+        const item = fromUuidSync(itemId);
+        if(!item && !(typeof item.system?.toggleVault === 'function')) return;
+        await item.system.toggleVault(event, false, true);
     }
 
     static #sendToChat(event, target) {
@@ -434,13 +439,6 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         item.sheet.render({ force: true });
         card.classList.remove('show-actions');
         card.classList.remove('selected');
-    }
-
-    static #recall(event, target) {
-        const card = target.closest('[data-item-id');
-        const { itemId } = card.dataset;
-        const item = fromUuidSync(itemId);
-        if(!item) return;
     }
 
     static #cancelBeastform(event, target) {

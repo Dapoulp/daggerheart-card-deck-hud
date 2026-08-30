@@ -3,8 +3,6 @@ import DHCard from "./card";
 import AdversariesSelectionDialog from "./dialogs/adversaries-selection-dialog";
 
 export default class DHDeck {
-    isVault = false;
-
     constructor(actor, parent) {
         this.actor = actor;
         this.parent = parent;
@@ -72,7 +70,7 @@ export default class DHDeck {
         const items = [];
         
         if(this.actor.type === 'character') {
-            if(this.isVault) return this.actor.system.domainCards.vault;
+            if(this.parent.isVault) return this.actor.system.domainCards.vault;
 
             const isBeastform = this.actor.system.activeBeastform;
 
@@ -175,7 +173,7 @@ export default class DHDeck {
             use: async (event) => {
                 const companionSheet = game.system.api.applications.sheets.actors.Companion;
                 const partner = this.actor.system.partner;
-                if (!partner) return ui.notifications.warn('DAGGERHEART.UI.Notifications.partnerRequired');
+                if (!partner) return ui.notifications.warn('DAGGERHEART.UI.Notifications.partnerRequired', { localize: true });
                 const config = {
                     event,
                     title: `${game.i18n.localize('DAGGERHEART.GENERAL.Roll.action')}: ${this.actor.name}`,
