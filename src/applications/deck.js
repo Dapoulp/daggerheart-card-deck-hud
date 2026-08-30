@@ -234,13 +234,10 @@ export default class DHDeck {
 
     getCardStyle(count, index, frontCardPosition = "last") {
         const spacing = this.element.dataset.cardOverlap || game.settings.get(MODULE_ID, "cardOverlap") || 55;
-
         const maxRotation = 14;
         const maxCurve = 45;
-
         const center = (count - 1) / 2;
         const offset = index - center;
-
         const normalized = count > 1 ? offset / center : 0;
         
         // Horizontal positioning
@@ -248,7 +245,6 @@ export default class DHDeck {
 
         // Vertical curve
         const curveNormalized = count === 2 ? normalized * Math.sqrt(20 / maxCurve) : normalized;
-
         const translateY = curveNormalized ** 2 * maxCurve;
 
         // Rotation
