@@ -93,13 +93,17 @@ Hooks.on("renderSettingsConfig", (app, html) => {
         game.settings.set(MODULE_ID, "cardOverlap", value);
     });
 
-    // Card Overlap Live Update
+    // Card Width Live Update
     const widthSlider = html.querySelector('range-picker[name="daggerheart-card-deck-hud.cardWidth"]');
 
-    widthSlider?.addEventListener("input", event => {
+    widthSlider?.addEventListener("input", async event => {
         const value = Number(event.target.value);
-        DHCardDeckHUD.instance?.parts.deck?.setAttribute('data-card-width-coeff', value);
-        game.settings.set(MODULE_ID, "cardOverlap", value);
+        if(!DHCardDeckHUD.instance) return;
+        await game.settings.set(MODULE_ID, "cardWidth", value);
+        DHCardDeckHUD.instance.element.style.setProperty('--card-width', `${DHCardDeckHUD.instance.cardWidth}px`);
+        if(!DHCardDeckHUD.instance?.deck) return;
+        DHCardDeckHUD.instance.deck.updateCardPosition();
+        DHCardDeckHUD.instance.deck._setDeckSize();
     });
 
     // Card Gradient Live Update
