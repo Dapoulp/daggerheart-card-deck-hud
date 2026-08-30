@@ -1,5 +1,6 @@
 import { MODULE_ID } from "../system/constants";
 import DHCard from "./card";
+import AdversariesSelectionDialog from "./dialogs/adversaries-selection-dialog";
 
 export default class DHDeck {
     isVault = false;
@@ -57,7 +58,6 @@ export default class DHDeck {
 
     async createCards() {
         const items = this.getItems();
-        console.log(items)
         const entries = await Promise.all(
             items.map(async (item, index) => {
                 const card = await DHCard.create(item, index);
@@ -109,6 +109,7 @@ export default class DHDeck {
             items.push(...this.actor.items);
             if(this.actor.system.attack) items.push(this.simulateUnarmedCard());
             if(this.actor.type === "companion") items.push(this.simulateActionRollCard());
+            if(this.actor.type === "environment" && Object.values(this.actor.system.potentialAdversaries).some(({ adversaries }) => adversaries.length > 0)) items.push(this.simulatePotentialAdversariesCard());
         }
 
         const order = new Map(this.itemTypes.map((itemType, index) => [itemType.type, index]));
@@ -190,6 +191,23 @@ export default class DHDeck {
                 companionSheet.prototype.consumeResource.call({ actor: this.actor }, result?.costs);
                 result?.resourceUpdates.updateResources();
             }
+        }
+    }
+
+    simulatePotentialAdversariesCard() {
+        return {
+            id: foundry.utils.randomID(),
+            name: _loc('DAGGERHEART.ACTORS.Adversary.Embed.potentialAdversaries'),
+            img: this.actor.img,
+            type: 'potentialAdversaries',
+            actor: this.actor,
+            effects: [],
+            noButton: true,
+            system: {
+                featureForm: 'special',
+                actionsList: []
+            },
+            use: (event) => AdversariesSelectionDialog.create(this.actor, event)
         }
     }
 

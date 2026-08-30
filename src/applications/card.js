@@ -1,5 +1,5 @@
 import { MODULE_ID } from "../system/constants";
-import FeatureSelectionDialog from "./feature-selection-dialog";
+import FeatureSelectionDialog from "./dialogs/feature-selection-dialog";
 
 const embedTemplates = new Map([
     ['class', 'systems/daggerheart/templates/components/card/subclass.hbs'],
@@ -95,7 +95,7 @@ export default class DHCard {
         let item = this.item;
 
         const embedTemplate = item.system.constructor?.embedTemplate ?? embedTemplates.get(item.type) ?? embedTemplates.get('default');
-        const desc = item.system.description ?? null;
+        let desc = item.system.description ?? null;
         const props = [];
         const features = [];
         
@@ -139,7 +139,10 @@ export default class DHCard {
                     cardType: { label: `TYPES.Item.${item.type}` }
                 };
                 classe = 'beastform';
+                if(Object.keys(item.system.advantageOn).length) features.push({ label: _loc('DAGGERHEART.ITEMS.Beastform.FIELDS.advantageOn.label'), value: Object.values(item.system.advantageOn).map(a => a.value).join(', ') });
                 break;
+            case 'potentialAdversaries':
+                desc = await this.createPotentialAdversaries();
             case 'feature':
                 extraDatas = {
                     domain: {color: '#00288f'},
@@ -158,7 +161,7 @@ export default class DHCard {
                 break;
         }
 
-        if(item.type === 'beastform' && Object.keys(item.system.advantageOn).length) features.push({ label: _loc('DAGGERHEART.ITEMS.Beastform.FIELDS.advantageOn.label'), value: Object.values(item.system.advantageOn).map(a => a.value).join(', ') });
+        // Add Features & Actions for description
         if(this.features.length) features.push(...this.features.map(feature => ({ label: feature.name, value: feature.system.description })));
         if(item.system.actions?.size) features.push(...item.system.actions.map(action => ({ label: action.name, value: action.description })));
 
@@ -220,6 +223,36 @@ export default class DHCard {
         });
 
         return enrichDesc;
+    }
+
+    async createPotentialAdversaries() {
+        const descContainer = document.createElement('div');
+        const potentialContainer = document.createElement('div');
+        potentialContainer.classList.add('features', 'item-description-outer-container');
+        const potentialGroups = Object.values(this.actor.system.potentialAdversaries);
+        for(const group of potentialGroups) {
+            const groupContainer = document.createElement('fieldset');
+            groupContainer.classList.add('item-description-container', 'glassy', 'card-potential-fieldset');
+            const groupLabel = document.createElement('legend');
+            groupLabel.classList.add('card-potential-name');
+            groupLabel.textContent = group.label;
+            groupContainer.append(groupLabel);
+            for(const adversary of group.adversaries) {
+                const actor = await fromUuid(adversary.uuid);
+                const adversaryContainer = document.createElement('div');
+                adversaryContainer.classList.add('feature', 'item-description-inner-container', 'card-potential-adversary');
+                const adversaryImg = document.createElement('img');
+                adversaryImg.src = actor.img;
+                const adversaryName = document.createElement('p');
+                adversaryName.textContent = actor.name;
+                adversaryContainer.append(adversaryImg, adversaryName);
+                groupContainer.append(adversaryContainer);
+            }
+
+            potentialContainer.append(groupContainer);
+        }
+        descContainer.append(potentialContainer);
+        return descContainer.innerHTML;
     }
 
     async addButtons() {
