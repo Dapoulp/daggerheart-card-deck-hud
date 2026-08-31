@@ -63,6 +63,16 @@
         }
     }
 
+    &[data-lock-position="true"] {
+        button.dh-cd-control-move {
+            cursor: unset;
+
+            &::before {
+                content: '\f023';
+            }
+        }
+    }
+
     .dh-card-wrapper,
     .dh-cd-controls {
         pointer-events: auto;

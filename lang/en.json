@@ -120,6 +120,9 @@
         },
         "ERRORS": {
             "NoUse": "No Action or Feature attached to this card."
+        },
+        "TOOLTIP": {
+            "DragLock": "Drag to move. Right-click to lock/unlock."
         }
     },
     "DAGGERHEART": {

@@ -5,15 +5,9 @@
     </button>
     {{/if}}
     {{#if isFreePositioning}}
-    <button type="button" class="dh-cd-control-move">
-        <i class="fa-solid fa-up-down-left-right"></i>
-    </button>
+    <button type="button" class="dh-cd-control-move fa-solid fa-up-down-left-right icon" data-tooltip="{{localize 'DHDECKCARD.TOOLTIP.DragLock'}}" data-tooltip-direction="UP"></button>
     {{/if}}
-    <button type="button" class="dh-cd-control-toggle" data-action="toggleHUD">
-        <i class="fa-solid fa-chevron-down"></i>
-    </button>
-    <button type="button" class="dh-cd-control-settings" data-action="toggleMenu">
-        <i class="fa-solid fa-gear"></i>
-    </button>
+    <button type="button" class="dh-cd-control-toggle fa-solid fa-chevron-down icon" data-action="toggleHUD"></button>
+    <button type="button" class="dh-cd-control-settings fa-solid fa-gear icon" data-action="toggleMenu"></button>
     {{> 'modules/daggerheart-card-deck-hud/templates/menu.hbs'}}
 </div>
