@@ -365,6 +365,7 @@ export default class DHDeck {
 
     setVarStyle() {
         this.element.style.setProperty('--hover-y-value', `${game.settings.get(MODULE_ID, 'hoverY') * -1}rem`);
+        this.element.style.setProperty('--hover-scale-value', game.settings.get(MODULE_ID, 'hoverScale'));
         this.element.style.setProperty('--selected-scale', `${game.settings.get(MODULE_ID, 'selectedCardScale')}`);
     }
 }

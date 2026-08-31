@@ -87,7 +87,11 @@
             },
             "HoverY": {
                 "label": "Card Hover movement",
-                "hint": "Control how much card top slide when hovered."
+                "hint": "Control how much card top slides when hovered."
+            },
+            "HoverScale": {
+                "label": "Card Hover scale",
+                "hint": "Control how much card scales up when hovered."
             },
             "AutoHide": {
                 "label": "Auto Hide Deck",
