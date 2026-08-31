@@ -90,10 +90,6 @@
         padding-right: calc(12px - var(--scrollbar-width)) !important;
     }
 
-    &:not(:has(.dh-cd-cards:hover, .dh-cd-controls:hover)) .enfant1.auto-hide {
-        opacity: 0;
-    }
-
     .dh-cd-cards {
         --card-height: calc(var(--card-width) * 7 / 5);
         --fade-orientation: to top;
@@ -135,9 +131,6 @@
                 opacity: 0;
             }
         }
-        // &.auto-hide:not(:hover):not(:has(+ .enfant2:hover)) {
-        //     opacity: 0;
-        // }
 
         &:not(:hover) {
             .dh-card:not(.selected) {
@@ -168,7 +161,7 @@
             &:not(.selected) {
                 &:has(.hover-layout:hover) {
                     --hover-y: var(--hover-y-value);
-                    --hover-scale: 1.1;
+                    --hover-scale: var(--hover-scale-value);
                     --base-z: 500 !important;
                 }
 

@@ -44,19 +44,6 @@ export function registerSettings() {
         default: false,
         onChange: value => DHCardDeckHUD.instance?.parts?.deck?.classList.toggle('auto-hide', value)
     });
-
-    game.settings.register(MODULE_ID, 'cardWidth', {
-        name: 'Card Width',
-        scope: 'client',
-        config: true,
-        type: Number,
-        default: 5,
-        range: {
-            min: 1,
-            max: 10,
-            step: 1
-        }
-    });
     
     game.settings.register(MODULE_ID, 'deckPosition', {
         name: 'DHDECKCARD.SETTINGS.DeckPosition.label',
@@ -119,6 +106,19 @@ export function registerSettings() {
         default: 'last',
         onChange: () => DHCardDeckHUD.instance?.deck?.updateCardPosition()
     });
+
+    game.settings.register(MODULE_ID, 'cardWidth', {
+        name: 'Card Width',
+        scope: 'client',
+        config: true,
+        type: Number,
+        default: 5,
+        range: {
+            min: 1,
+            max: 10,
+            step: 1
+        }
+    });
     
     game.settings.register(MODULE_ID, 'cardOverlap', {
         name: 'DHDECKCARD.SETTINGS.CardOverlap.label',
@@ -147,6 +147,21 @@ export function registerSettings() {
         },
         default: 1.25,
         onChange: value => DHCardDeckHUD.instance?.parts?.deck?.style.setProperty('--hover-y-value', `${value * -1}rem`)
+    });
+    
+    game.settings.register(MODULE_ID, 'hoverScale', {
+        name: 'DHDECKCARD.SETTINGS.HoverScale.label',
+        hint: 'DHDECKCARD.SETTINGS.HoverScale.hint',
+        scope: 'client',
+        config: true,
+        type: Number,
+        range: {
+            min: 1,
+            max: 3,
+            step: 0.1
+        },
+        default: 1.1,
+        onChange: value => DHCardDeckHUD.instance?.parts?.deck?.style.setProperty('--hover-scale-value', value)
     });
     
     game.settings.register(MODULE_ID, 'selectedCardScale', {
