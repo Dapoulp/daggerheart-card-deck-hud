@@ -2,52 +2,52 @@ import { MODULE_ID } from './constants';
 import { DHCardDeckHUD } from '../applications/daggerheart-card-deck-hud';
 
 export function registerSettings() {
-    game.settings.register(MODULE_ID, "disableHUD", {
-        name: "DHDECKCARD.SETTINGS.DisableHUD.label",
-        hint: "DHDECKCARD.SETTINGS.DisableHUD.hint",
+    game.settings.register(MODULE_ID, 'disableHUD', {
+        name: 'DHDECKCARD.SETTINGS.DisableHUD.label',
+        hint: 'DHDECKCARD.SETTINGS.DisableHUD.hint',
         scope: 'client',
         config: true,
         type: Boolean,
         default: false,
-        onChange: async (value) => {
+        onChange: async value => {
             if (value) await DHCardDeckHUD.destroy();
             else await DHCardDeckHUD.create();
         }
     });
 
-    game.settings.register(MODULE_ID, "hideHotbar", {
-        name: "DHDECKCARD.SETTINGS.HideHotbar.label",
-        hint: "DHDECKCARD.SETTINGS.HideHotbar.hint",
+    game.settings.register(MODULE_ID, 'hideHotbar', {
+        name: 'DHDECKCARD.SETTINGS.HideHotbar.label',
+        hint: 'DHDECKCARD.SETTINGS.HideHotbar.hint',
         scope: 'client',
         config: true,
         type: Boolean,
         default: false,
-        onChange: (value) => ui.hotbar.element.classList.toggle("hidden", value)
+        onChange: value => ui.hotbar.element.classList.toggle('hidden', value)
     });
 
-    game.settings.register(MODULE_ID, "hideDescription", {
-        name: "DHDECKCARD.SETTINGS.HideDescription.label",
-        hint: "DHDECKCARD.SETTINGS.HideDescription.hint",
+    game.settings.register(MODULE_ID, 'hideDescription', {
+        name: 'DHDECKCARD.SETTINGS.HideDescription.label',
+        hint: 'DHDECKCARD.SETTINGS.HideDescription.hint',
         scope: 'client',
         config: true,
         type: Boolean,
         default: false,
-        onChange: (value) => DHCardDeckHUD.instance?.parts?.deck?.classList.toggle('description-hidden', value)
+        onChange: value => DHCardDeckHUD.instance?.parts?.deck?.classList.toggle('description-hidden', value)
     });
 
-    game.settings.register(MODULE_ID, "autoHide", {
-        name: "DHDECKCARD.SETTINGS.AutoHide.label",
-        hint: "DHDECKCARD.SETTINGS.AutoHide.hint",
+    game.settings.register(MODULE_ID, 'autoHide', {
+        name: 'DHDECKCARD.SETTINGS.AutoHide.label',
+        hint: 'DHDECKCARD.SETTINGS.AutoHide.hint',
         scope: 'client',
         config: true,
         type: Boolean,
         default: false,
-        onChange: (value) => DHCardDeckHUD.instance?.parts?.deck?.classList.toggle('auto-hide', value)
+        onChange: value => DHCardDeckHUD.instance?.parts?.deck?.classList.toggle('auto-hide', value)
     });
 
-    game.settings.register(MODULE_ID, "cardWidth", {
-        name: "Card Width",
-        scope: "client",
+    game.settings.register(MODULE_ID, 'cardWidth', {
+        name: 'Card Width',
+        scope: 'client',
         config: true,
         type: Number,
         default: 5,
@@ -59,16 +59,16 @@ export function registerSettings() {
     });
     
     game.settings.register(MODULE_ID, 'deckPosition', {
-        name: "DHDECKCARD.SETTINGS.DeckPosition.label",
-        hint: "DHDECKCARD.SETTINGS.DeckPosition.hint",
+        name: 'DHDECKCARD.SETTINGS.DeckPosition.label',
+        hint: 'DHDECKCARD.SETTINGS.DeckPosition.hint',
         scope: 'client',
         config: true,
         type: String,
         choices: {
-            'left': 'DHDECKCARD.SETTINGS.DeckPosition.options.left',
-            'center': 'DHDECKCARD.SETTINGS.DeckPosition.options.center',
-            'right': 'DHDECKCARD.SETTINGS.DeckPosition.options.right',
-            'custom': 'DHDECKCARD.SETTINGS.DeckPosition.options.custom'
+            left: 'DHDECKCARD.SETTINGS.DeckPosition.options.left',
+            center: 'DHDECKCARD.SETTINGS.DeckPosition.options.center',
+            right: 'DHDECKCARD.SETTINGS.DeckPosition.options.right',
+            custom: 'DHDECKCARD.SETTINGS.DeckPosition.options.custom'
         },
         default: 'center',
         onChange: async () => {
@@ -77,25 +77,25 @@ export function registerSettings() {
         }
     });
 
-    game.settings.register(MODULE_ID, "lockPosition", {
-        name: "DHDECKCARD.SETTINGS.HideHotbar.label",
-        hint: "DHDECKCARD.SETTINGS.HideHotbar.hint",
+    game.settings.register(MODULE_ID, 'lockPosition', {
+        name: 'DHDECKCARD.SETTINGS.HideHotbar.label',
+        hint: 'DHDECKCARD.SETTINGS.HideHotbar.hint',
         scope: 'client',
         config: false,
         type: Boolean,
         default: false,
-        onChange: (value) => DHCardDeckHUD.instance?.setLockPosition()
+        onChange: value => DHCardDeckHUD.instance?.setLockPosition()
     });
     
     game.settings.register(MODULE_ID, 'deckStyle', {
-        name: "DHDECKCARD.SETTINGS.DeckStyle.label",
-        hint: "DHDECKCARD.SETTINGS.DeckStyle.hint",
+        name: 'DHDECKCARD.SETTINGS.DeckStyle.label',
+        hint: 'DHDECKCARD.SETTINGS.DeckStyle.hint',
         scope: 'client',
         config: true,
         type: String,
         choices: {
-            'curved': 'DHDECKCARD.SETTINGS.DeckStyle.options.curved',
-            'flat': 'DHDECKCARD.SETTINGS.DeckStyle.options.flat'
+            curved: 'DHDECKCARD.SETTINGS.DeckStyle.options.curved',
+            flat: 'DHDECKCARD.SETTINGS.DeckStyle.options.flat'
         },
         default: 'curved',
         onChange: value => {
@@ -106,23 +106,23 @@ export function registerSettings() {
     });
     
     game.settings.register(MODULE_ID, 'frontPosition', {
-        name: "DHDECKCARD.SETTINGS.FrontPosition.label",
-        hint: "DHDECKCARD.SETTINGS.FrontPosition.hint",
+        name: 'DHDECKCARD.SETTINGS.FrontPosition.label',
+        hint: 'DHDECKCARD.SETTINGS.FrontPosition.hint',
         scope: 'client',
         config: true,
         type: String,
         choices: {
-            'first': 'DHDECKCARD.SETTINGS.FrontPosition.options.first',
-            'middle': 'DHDECKCARD.SETTINGS.FrontPosition.options.middle',
-            'last': 'DHDECKCARD.SETTINGS.FrontPosition.options.last'
+            first: 'DHDECKCARD.SETTINGS.FrontPosition.options.first',
+            middle: 'DHDECKCARD.SETTINGS.FrontPosition.options.middle',
+            last: 'DHDECKCARD.SETTINGS.FrontPosition.options.last'
         },
         default: 'last',
         onChange: () => DHCardDeckHUD.instance?.deck?.updateCardPosition()
     });
     
     game.settings.register(MODULE_ID, 'cardOverlap', {
-        name: "DHDECKCARD.SETTINGS.CardOverlap.label",
-        hint: "DHDECKCARD.SETTINGS.CardOverlap.hint",
+        name: 'DHDECKCARD.SETTINGS.CardOverlap.label',
+        hint: 'DHDECKCARD.SETTINGS.CardOverlap.hint',
         scope: 'client',
         config: true,
         type: Number,
@@ -135,8 +135,8 @@ export function registerSettings() {
     });
     
     game.settings.register(MODULE_ID, 'hoverY', {
-        name: "DHDECKCARD.SETTINGS.HoverY.label",
-        hint: "DHDECKCARD.SETTINGS.HoverY.hint",
+        name: 'DHDECKCARD.SETTINGS.HoverY.label',
+        hint: 'DHDECKCARD.SETTINGS.HoverY.hint',
         scope: 'client',
         config: true,
         type: Number,
@@ -146,12 +146,12 @@ export function registerSettings() {
             step: 0.25
         },
         default: 1.25,
-        onChange: value => DHCardDeckHUD.instance?.parts?.deck?.style.setProperty("--hover-y-value", `${value * -1}rem`)
+        onChange: value => DHCardDeckHUD.instance?.parts?.deck?.style.setProperty('--hover-y-value', `${value * -1}rem`)
     });
     
     game.settings.register(MODULE_ID, 'selectedCardScale', {
-        name: "DHDECKCARD.SETTINGS.SelectedCardScale.label",
-        hint: "DHDECKCARD.SETTINGS.SelectedCardScale.hint",
+        name: 'DHDECKCARD.SETTINGS.SelectedCardScale.label',
+        hint: 'DHDECKCARD.SETTINGS.SelectedCardScale.hint',
         scope: 'client',
         config: true,
         type: Number,
@@ -161,12 +161,12 @@ export function registerSettings() {
             step: 0.25
         },
         default: 1.5,
-        onChange: value => DHCardDeckHUD.instance?.parts?.deck?.style.setProperty("--selected-scale", `${value}`)
+        onChange: value => DHCardDeckHUD.instance?.parts?.deck?.style.setProperty('--selected-scale', `${value}`)
     });
     
     game.settings.register(MODULE_ID, 'deckBorderMargin', {
-        name: "DHDECKCARD.SETTINGS.DeckBorderMargin.label",
-        hint: "DHDECKCARD.SETTINGS.DeckBorderMargin.hint",
+        name: 'DHDECKCARD.SETTINGS.DeckBorderMargin.label',
+        hint: 'DHDECKCARD.SETTINGS.DeckBorderMargin.hint',
         scope: 'client',
         config: true,
         type: Number,
@@ -179,8 +179,8 @@ export function registerSettings() {
     });
     
     game.settings.register(MODULE_ID, 'deckBottomMargin', {
-        name: "DHDECKCARD.SETTINGS.DeckBottomMargin.label",
-        hint: "DHDECKCARD.SETTINGS.DeckBottomMargin.hint",
+        name: 'DHDECKCARD.SETTINGS.DeckBottomMargin.label',
+        hint: 'DHDECKCARD.SETTINGS.DeckBottomMargin.hint',
         scope: 'client',
         config: true,
         type: Number,
@@ -193,8 +193,8 @@ export function registerSettings() {
     });
     
     game.settings.register(MODULE_ID, 'deckBetweenMargin', {
-        name: "DHDECKCARD.SETTINGS.DeckBetweenMargin.label",
-        hint: "DHDECKCARD.SETTINGS.DeckBetweenMargin.hint",
+        name: 'DHDECKCARD.SETTINGS.DeckBetweenMargin.label',
+        hint: 'DHDECKCARD.SETTINGS.DeckBetweenMargin.hint',
         scope: 'client',
         config: true,
         type: Number,
@@ -206,9 +206,9 @@ export function registerSettings() {
         default: 0
     });
 
-    game.settings.register(MODULE_ID, "directAction", {
-        name: "DHDECKCARD.SETTINGS.HideHotbar.label",
-        hint: "DHDECKCARD.SETTINGS.HideHotbar.hint",
+    game.settings.register(MODULE_ID, 'directAction', {
+        name: 'DHDECKCARD.SETTINGS.HideHotbar.label',
+        hint: 'DHDECKCARD.SETTINGS.HideHotbar.hint',
         scope: 'client',
         config: false,
         type: Boolean,
@@ -216,8 +216,8 @@ export function registerSettings() {
     });
     
     game.settings.register(MODULE_ID, 'cardGradient', {
-        name: "DHDECKCARD.SETTINGS.CardGradient.label",
-        hint: "DHDECKCARD.SETTINGS.CardGradient.hint",
+        name: 'DHDECKCARD.SETTINGS.CardGradient.label',
+        hint: 'DHDECKCARD.SETTINGS.CardGradient.hint',
         scope: 'client',
         config: true,
         type: Number,
@@ -229,9 +229,9 @@ export function registerSettings() {
         default: 0
     });
 
-    game.settings.register(MODULE_ID, "invertGradient", {
-        name: "DHDECKCARD.SETTINGS.InvertGradient.label",
-        hint: "DHDECKCARD.SETTINGS.InvertGradient.hint",
+    game.settings.register(MODULE_ID, 'invertGradient', {
+        name: 'DHDECKCARD.SETTINGS.InvertGradient.label',
+        hint: 'DHDECKCARD.SETTINGS.InvertGradient.hint',
         scope: 'client',
         config: true,
         type: Boolean,
@@ -239,22 +239,22 @@ export function registerSettings() {
         onChange: value => DHCardDeckHUD.instance?.parts?.deck?.classList.toggle('invert-gradient', value)
     });
 
-    game.settings.register(MODULE_ID, "itemTypes", {
-        scope: "client",
+    game.settings.register(MODULE_ID, 'itemTypes', {
+        scope: 'client',
         config: false,
         type: Array,
         default: []
     });
 
-    game.settings.register(MODULE_ID, "itemTypesNPC", {
-        scope: "client",
+    game.settings.register(MODULE_ID, 'itemTypesNPC', {
+        scope: 'client',
         config: false,
         type: Array,
         default: []
     });
 
-    game.settings.register(MODULE_ID, "deckCustomPosition", {
-        scope: "client",
+    game.settings.register(MODULE_ID, 'deckCustomPosition', {
+        scope: 'client',
         config: false,
         type: Object,
         default: {

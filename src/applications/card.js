@@ -1,5 +1,4 @@
-import { MODULE_ID } from "../system/constants";
-import FeatureSelectionDialog from "./dialogs/feature-selection-dialog";
+import FeatureSelectionDialog from './dialogs/feature-selection-dialog';
 
 const embedTemplates = new Map([
     ['class', 'systems/daggerheart/templates/components/card/subclass.hbs'],
@@ -29,8 +28,8 @@ export default class DHCard {
         if (this.#selected === value) return;
 
         this.#selected = value;
-        this.element?.classList.toggle("selected", value);
-        if(!value) this.element?.classList.remove("show-actions");
+        this.element?.classList.toggle('selected', value);
+        if (!value) this.element?.classList.remove('show-actions');
     }
 
     get actor() {
@@ -38,7 +37,7 @@ export default class DHCard {
     }
 
     get isLocked() {
-        return this.actor.system.activeBeastform && ((this.item.type === 'weapon' && this.item.id !== this.actor.system.attack.id) || this.item.system?.type === "spell");
+        return this.actor.system.activeBeastform && ((this.item.type === 'weapon' && this.item.id !== this.actor.system.attack.id) || this.item.system?.type === 'spell');
     }
 
     static async create(item, index) {
@@ -54,9 +53,9 @@ export default class DHCard {
 
     async toEmbed() {
         let embed = (await this.item.system?.toEmbed?.()) ?? await this.simulateToEmbed();
-        if(!embed) return;
+        if (!embed) return;
         embed = embed instanceof HTMLCollection ? embed[0] : embed;        
-        if(this.item.sourceUuid === "Compendium.daggerheart.ancestries.Item.ed8BoLR4SHOpeV00") this.processExtraTweaks(embed);
+        if (this.item.sourceUuid === 'Compendium.daggerheart.ancestries.Item.ed8BoLR4SHOpeV00') this.processExtraTweaks(embed);
 
         return await this.addWrapper(embed);
     }
@@ -69,12 +68,12 @@ export default class DHCard {
     }
 
     async addWrapper(card) {
-        const wrapper = document.createElement("div");
-        wrapper.classList.add("dh-card-wrapper");
+        const wrapper = document.createElement('div');
+        wrapper.classList.add('dh-card-wrapper');
         wrapper.dataset.cardId = this.id;
         wrapper.setAttribute('data-item-id', this.item.uuid);
-        wrapper.setAttribute("data-action", "useCard");
-        wrapper.setAttribute("data-locked", !!this.isLocked);
+        wrapper.setAttribute('data-action', 'useCard');
+        wrapper.setAttribute('data-locked', !!this.isLocked);
 
         const buttons = await this.addButtons();
         const hoverLayout = this.addHoverLayout();
@@ -92,8 +91,8 @@ export default class DHCard {
         const props = [];
         const features = [];
         
-        if(['armor', 'weapon'].includes(item.type)) {
-            if(item.system.tier) props.push({ label: 'DAGGERHEART.GENERAL.Tiers.singular', value: item.system.tier });
+        if (['armor', 'weapon'].includes(item.type)) {
+            if (item.system.tier) props.push({ label: 'DAGGERHEART.GENERAL.Tiers.singular', value: item.system.tier });
             props.push(...(item.type === 'armor' ? 
                 [
                     { label: 'DAGGERHEART.ITEMS.Armor.baseScore', value: `${item.system.armor.current} / ${item.system.armor.max}` },
@@ -103,19 +102,20 @@ export default class DHCard {
                     { label: 'DAGGERHEART.GENERAL.Trait.single', value: item.system.attack.roll.trait ? _loc(`DAGGERHEART.CONFIG.Traits.${item.system.attack.roll.trait}.name`) : null },
                     { label: 'DAGGERHEART.GENERAL.damage', value: Roll.replaceFormulaData(item.system.attack.damage.main.value.getFormula(), item.actor.getRollData()) },
                     { label: 'DAGGERHEART.GENERAL.burden', value: _loc(`DAGGERHEART.CONFIG.Burden.${item.system.burden}`) },
-                    { label: 'DAGGERHEART.GENERAL.type', value: item.system.secondary ? _loc("DHDECKCARD.GENERAL.Tags.secondary") : _loc("DHDECKCARD.GENERAL.Tags.primary") },
+                    { label: 'DAGGERHEART.GENERAL.type', value: item.system.secondary ? _loc('DHDECKCARD.GENERAL.Tags.secondary') : _loc('DHDECKCARD.GENERAL.Tags.primary') },
                     { label: 'DAGGERHEART.GENERAL.range', value: _loc(`DAGGERHEART.CONFIG.Range.${item.system.attack.range}.name`) }
                 ]
             ));
-        };
+        }
 
         // Specific type datas
-        let extraDatas = {};
+        let extraDatas;
         let classe;
 
         switch (item.type) {
             case 'class':
-                classe = "class";
+                classe = 'class';
+                // falls through
             case 'subclass':
                 const classItem = item.system.linkedClass ? await fromUuid(item.system.linkedClass) : item;
                 const domains = CONFIG.DH.DOMAIN.allDomains();
@@ -132,17 +132,19 @@ export default class DHCard {
                     cardType: { label: `TYPES.Item.${item.type}` }
                 };
                 classe = 'beastform';
-                if(Object.keys(item.system.advantageOn).length) features.push({ label: _loc('DAGGERHEART.ITEMS.Beastform.FIELDS.advantageOn.label'), value: Object.values(item.system.advantageOn).map(a => a.value).join(', ') });
+                if (Object.keys(item.system.advantageOn).length) features.push({ label: _loc('DAGGERHEART.ITEMS.Beastform.FIELDS.advantageOn.label'), value: Object.values(item.system.advantageOn).map(a => a.value).join(', ') });
                 break;
             case 'potentialAdversaries':
                 desc = await this.createPotentialAdversaries();
+                // falls through
             case 'feature':
                 extraDatas = {
                     domain: {color: '#00288f'},
                     cardType: { label: `DAGGERHEART.CONFIG.FeatureForm.${item.system.featureForm}` }
                 };
                 classe = 'feature';
-                if(item.effects.size) features.push(...item.effects.map(effect => ({ label: effect.name, value: effect.description })));
+                if (item.effects.size) features.push(...item.effects
+                    .map(effect => ({ label: effect.name, value: effect.description })));
                 break;
             default:
                 extraDatas = {
@@ -150,13 +152,16 @@ export default class DHCard {
                     cardType: { label: `TYPES.Item.${item.type}` }
                 };
                 classe = 'equipment';
-                if(item.effects.size) features.push(...item.effects.map(effect => ({ label: effect.name, value: effect.description })));
+                if (item.effects.size) features.push(...item.effects
+                    .map(effect => ({ label: effect.name, value: effect.description })));
                 break;
         }
 
         // Add Features & Actions for description
-        if(this.features.length) features.push(...this.features.map(feature => ({ label: feature.name, value: feature.system.description })));
-        if(item.system.actions?.size) features.push(...item.system.actions.map(action => ({ label: action.name, value: action.description })));
+        if (this.features.length) features.push(...this.features
+            .map(feature => ({ label: feature.name, value: feature.system.description })));
+        if (item.system.actions?.size) features.push(...item.system.actions
+            .map(action => ({ label: action.name, value: action.description })));
 
         const content = await foundry.applications.handlebars.renderTemplate(embedTemplate, {
             item,
@@ -167,23 +172,23 @@ export default class DHCard {
         const container = document.createElement('div');
         container.innerHTML = content;
 
-        const element = container.querySelector("div.dh-card");
-        if(classe) element.classList.add(classe);
+        const element = container.querySelector('div.dh-card');
+        if (classe) element.classList.add(classe);
 
         return element;
     }
 
-    async createDescription({ desc=null, props=[], features=[] }={}) {
+    async createDescription({ desc = null, props = [], features = [] } = {}) {
         const descContainer = document.createElement('div');
 
         // Description
-        if(desc) descContainer.innerHTML = desc;
+        if (desc) descContainer.innerHTML = desc;
 
         // Equipment properties
-        if(props.length) {
+        if (props.length) {
             const propsContainer = document.createElement('div');
             propsContainer.classList.add('equipment-details');
-            for(const prop of props) {
+            for (const prop of props) {
                 prop.value ||= _loc('DHDECKCARD.GENERAL.NoDesc');
                 const propContainer = document.createElement('div');
                 propContainer.innerHTML = `<strong>${_loc(prop.label)}:</strong> ${prop.value}`;
@@ -193,12 +198,12 @@ export default class DHCard {
         }
 
         // Features & Actions
-        if(features.length) {
+        if (features.length) {
             const featuresContainer = document.createElement('div');
             featuresContainer.classList.add('features', 'item-description-outer-container');
             const itemContainer = document.createElement('div');
             itemContainer.classList.add('item-description-container');
-            for(const feature of features) {
+            for (const feature of features) {
                 feature.value ||= _loc('DHDECKCARD.GENERAL.NoDesc');
                 const featureContainer = document.createElement('div');
                 featureContainer.classList.add('feature', 'item-description-inner-container');
@@ -223,14 +228,14 @@ export default class DHCard {
         const potentialContainer = document.createElement('div');
         potentialContainer.classList.add('features', 'item-description-outer-container');
         const potentialGroups = Object.values(this.actor.system.potentialAdversaries);
-        for(const group of potentialGroups) {
+        for (const group of potentialGroups) {
             const groupContainer = document.createElement('fieldset');
             groupContainer.classList.add('item-description-container', 'glassy', 'card-potential-fieldset');
             const groupLabel = document.createElement('legend');
             groupLabel.classList.add('card-potential-name');
             groupLabel.textContent = group.label;
             groupContainer.append(groupLabel);
-            for(const adversary of group.adversaries) {
+            for (const adversary of group.adversaries) {
                 const actor = await fromUuid(adversary.uuid);
                 const adversaryContainer = document.createElement('div');
                 adversaryContainer.classList.add('feature', 'item-description-inner-container', 'card-potential-adversary');
@@ -250,25 +255,25 @@ export default class DHCard {
 
     async addButtons() {
         const buttonsContent = await foundry.applications.handlebars.renderTemplate(
-            "modules/daggerheart-card-deck-hud/templates/card-buttons.hbs",
+            'modules/daggerheart-card-deck-hud/templates/card-buttons.hbs',
             { type: this.item.type, inVault: this.item.system.inVault }
         );
 
-        const buttonsContainer = document.createElement("div");
+        const buttonsContainer = document.createElement('div');
         buttonsContainer.innerHTML = buttonsContent;
 
         return buttonsContainer.children;
     }
 
     addHoverLayout() {
-        const hoverLayout = document.createElement("div");
+        const hoverLayout = document.createElement('div');
         hoverLayout.classList.add('hover-layout');
         return hoverLayout;
     }
 
     attachFeatures() {
         const features = this.getItemFeatures().map(f => f.uuid);
-        if(features.length) this.features = this.actor.items.filter(i => features.includes(i.sourceUuid));
+        if (features.length) this.features = this.actor.items.filter(i => features.includes(i.sourceUuid));
     }
 
     getItemFeatures() {
@@ -298,22 +303,20 @@ export default class DHCard {
     }
 
     async use(event) {
-        const directAction = game.settings.get(MODULE_ID, "directAction");
-
-        if(this.item.system?.actionsList) this.item.use(event);
-        else if(this.item.id === this.actor.system.attack?.id) this.actor.system.attack.use(event);
+        if (this.item.system?.actionsList) this.item.use(event);
+        else if (this.item.id === this.actor.system.attack?.id) this.actor.system.attack.use(event);
         else {
             const count = this.features.reduce((acc, feature) => acc + (feature.system.actions.size > 0 ? 1 : 0), 0);
-            if(count) {
+            if (count) {
                 let feature = this.features.find(f => f.system.actions.size);
-                if(count > 1 && !event?.shiftKey) {
+                if (count > 1 && !event?.shiftKey) {
                     // Feature Selection Dialog
                     feature = await FeatureSelectionDialog.create(this, event);
                 }
-                if(feature) feature.use(event);
+                if (feature) feature.use(event);
             } else ui.notifications.warn('DHDECKCARD.ERRORS.NoUse', { localize: true });
         }
 
-        if(this.selected) this.selected = false;
+        if (this.selected) this.selected = false;
     }
 }

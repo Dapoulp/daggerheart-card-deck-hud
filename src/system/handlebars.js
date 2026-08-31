@@ -5,6 +5,6 @@ export const preloadHandlebarsTemplates = async function () {
         'modules/daggerheart-card-deck-hud/templates/card-buttons.hbs',
         'modules/daggerheart-card-deck-hud/templates/menu.hbs',
         'modules/daggerheart-card-deck-hud/templates/feature-selection-dialog.hbs',
-        'modules/daggerheart-card-deck-hud/templates/adversaries-selection-dialog.hbs',
+        'modules/daggerheart-card-deck-hud/templates/adversaries-selection-dialog.hbs'
     ]);
 }

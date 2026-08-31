@@ -1,6 +1,6 @@
-import { MODULE_ID } from "../system/constants";
-import DHCard from "./card";
-import AdversariesSelectionDialog from "./dialogs/adversaries-selection-dialog";
+import { MODULE_ID } from '../system/constants';
+import DHCard from './card';
+import AdversariesSelectionDialog from './dialogs/adversaries-selection-dialog';
 
 export default class DHDeck {
     constructor(actor, parent) {
@@ -16,11 +16,11 @@ export default class DHDeck {
 
     get classes() {
         const classes = [];
-        if(game.settings.get(MODULE_ID, "deckStyle") === 'flat') classes.push('flat');
-        if(!!this.actor.system.activeBeastform) classes.push('beastform');
-        if(game.settings.get(MODULE_ID, "hideDescription")) classes.push('description-hidden');
-        if(game.settings.get(MODULE_ID, "invertGradient")) classes.push('invert-gradient');
-        if(game.settings.get(MODULE_ID, "autoHide")) classes.push('auto-hide');
+        if (game.settings.get(MODULE_ID, 'deckStyle') === 'flat') classes.push('flat');
+        if (this.actor.system.activeBeastform) classes.push('beastform');
+        if (game.settings.get(MODULE_ID, 'hideDescription')) classes.push('description-hidden');
+        if (game.settings.get(MODULE_ID, 'invertGradient')) classes.push('invert-gradient');
+        if (game.settings.get(MODULE_ID, 'autoHide')) classes.push('auto-hide');
         return classes;
     }
 
@@ -30,7 +30,7 @@ export default class DHDeck {
 
     get activeTypes() {
         return this.itemTypes.reduce((types, type) => {
-            if(type.active) types.push(type.type);
+            if (type.active) types.push(type.type);
             return types;
         }, []);
     }
@@ -51,7 +51,7 @@ export default class DHDeck {
         const entries = await Promise.all(
             items.map(async (item, index) => {
                 const card = await DHCard.create(item, index);
-                card.element.style = this.getCardStyle(items.length, card, game.settings.get(MODULE_ID, "frontPosition"));
+                card.element.style = this.getCardStyle(items.length, card, game.settings.get(MODULE_ID, 'frontPosition'));
                 return [ card.id, card ];
             })
         );
@@ -61,8 +61,8 @@ export default class DHDeck {
     getItems() {
         const items = [];
         
-        if(this.actor.type === 'character') {
-            if(this.parent.isVault) return this.actor.system.domainCards.vault;
+        if (this.actor.type === 'character') {
+            if (this.parent.isVault) return this.actor.system.domainCards.vault;
 
             const isBeastform = this.actor.system.activeBeastform;
 
@@ -75,7 +75,8 @@ export default class DHDeck {
             const community = this.actor.system.community;
             const armor = this.actor.system.armor;
             const beastform = isBeastform ? this.getBeastformCard() : [];
-            const primaryWeapon = isBeastform || !this.actor.system.primaryWeapon ? this.simulateUnarmedCard() : this.actor.system.primaryWeapon;
+            const primaryWeapon = isBeastform || !this.actor.system.primaryWeapon ? this.simulateUnarmedCard()
+                : this.actor.system.primaryWeapon;
             const secondaryWeapon = isBeastform ? null : this.actor.system.secondaryWeapon;
             const consumable = this.actor.items.filter(item => item.type === 'consumable');
             const loot = this.actor.items.filter(item => item.type === 'loot');
@@ -97,9 +98,9 @@ export default class DHDeck {
             ]);
         } else {
             items.push(...this.actor.items);
-            if(this.actor.system.attack) items.push(this.simulateUnarmedCard());
-            if(this.actor.type === "companion") items.push(this.simulateActionRollCard());
-            if(this.actor.type === "environment" && Object.values(this.actor.system.potentialAdversaries).some(({ adversaries }) => adversaries.length > 0)) items.push(this.simulatePotentialAdversariesCard());
+            if (this.actor.system.attack) items.push(this.simulateUnarmedCard());
+            if (this.actor.type === 'companion') items.push(this.simulateActionRollCard());
+            if (this.actor.type === 'environment' && Object.values(this.actor.system.potentialAdversaries).some(({ adversaries }) => adversaries.length > 0)) items.push(this.simulatePotentialAdversariesCard());
         }
 
         const order = new Map(this.itemTypes.map((itemType, index) => [itemType.type, index]));
@@ -115,10 +116,28 @@ export default class DHDeck {
     }
 
     getSubclassCards(item) {
-        if(!item) return [];
-        const subclassCards = [{ ...item.toObject(), id: item._id, actor: item.actor, featureState: 1, featureList: item.system.foundationFeatures}];
-        if(item.system.featureState >= 2) subclassCards.push({ ...item.toObject(), id: item._id, actor: item.actor, featureState: 2, featureList: item.system.specializationFeatures});
-        if(item.system.featureState >= 3) subclassCards.push({ ...item.toObject(), id: item._id, actor: item.actor, featureState: 3, featureList: item.system.masteryFeatures});
+        if (!item) return [];
+        const subclassCards = [{
+            ...item.toObject(),
+            id: item._id,
+            actor: item.actor,
+            featureState: 1,
+            featureList: item.system.foundationFeatures
+        }];
+        if (item.system.featureState >= 2) subclassCards.push({
+            ...item.toObject(),
+            id: item._id,
+            actor: item.actor,
+            featureState: 2,
+            featureList: item.system.specializationFeatures
+        });
+        if (item.system.featureState >= 3) subclassCards.push({
+            ...item.toObject(),
+            id: item._id,
+            actor: item.actor,
+            featureState: 3,
+            featureList: item.system.masteryFeatures
+        });
         return subclassCards;
     }
 
@@ -138,7 +157,7 @@ export default class DHDeck {
             system: {
                 attack: action,
                 description,
-                burden: "oneHanded",
+                burden: 'oneHanded',
                 tier: 0,
                 constructor: {
                     DEFAULT_ICON: `modules/${MODULE_ID}/assets/icons/${this.actor.system.activeBeastform ? 'paw-solid-full.svg' : 'hand-fist-solid-full.svg'}`
@@ -162,7 +181,7 @@ export default class DHDeck {
                 actionsList: []
 
             },
-            use: async (event) => {
+            use: async event => {
                 const companionSheet = game.system.api.applications.sheets.actors.Companion;
                 const partner = this.actor.system.partner;
                 if (!partner) return ui.notifications.warn('DAGGERHEART.UI.Notifications.partnerRequired', { localize: true });
@@ -197,13 +216,14 @@ export default class DHDeck {
                 featureForm: 'special',
                 actionsList: []
             },
-            use: (event) => AdversariesSelectionDialog.create(this.actor, event)
+            use: event => AdversariesSelectionDialog.create(this.actor, event)
         }
     }
 
     getBeastformCard() {
-        const { uuid, id, name, img, description } = this.actor.system.activeBeastform;
-        const features = this.actor.items.filter(i => this.actor.system.activeBeastform.system.featureIds.includes(i.id));
+        const { uuid, id, name, img } = this.actor.system.activeBeastform;
+        const features = this.actor.items
+            .filter(i => this.actor.system.activeBeastform.system.featureIds.includes(i.id));
         return [{
             id, 
             name: _loc(name),
@@ -221,12 +241,16 @@ export default class DHDeck {
     }
 
     updateCardPosition() {
-        this.cards.forEach((card) => card.element.style = this.getCardStyle(this.cards.size, card, game.settings.get(MODULE_ID, "frontPosition")));
+        this.cards.forEach(card => card.element.style = this.getCardStyle(
+            this.cards.size,
+            card,
+            game.settings.get(MODULE_ID, 'frontPosition')
+        ));
     }
 
-    getCardStyle(count, card, frontCardPosition = "last") {
+    getCardStyle(count, card, frontCardPosition = 'last') {
         const index = card.index;
-        const spacing = this.element.dataset.cardOverlap || game.settings.get(MODULE_ID, "cardOverlap") || 55;
+        const spacing = this.element.dataset.cardOverlap || game.settings.get(MODULE_ID, 'cardOverlap') || 55;
         const maxRotation = 14;
         const maxCurve = 45;
         const center = (count - 1) / 2;
@@ -250,25 +274,25 @@ export default class DHDeck {
             `--translate-y: ${translateY}px`,
             `--rotate: ${rotate}deg`,
             `--base-z: ${baseZ}`
-        ].join("; ");
+        ].join('; ');
     }
 
     getCardZIndex(count, index, position) {
         switch (position) {
-            case "first":
+            case 'first':
                 return count - index;
-            case "middle": {
+            case 'middle': {
                 const middle = Math.floor((count - 1) / 2);
                 return count - Math.abs(index - middle);
             }
-            case "last":
+            case 'last':
             default:
                 return index + 1;
         }
     }
 
     _getItemTypes() {
-        const typesSetting = game.settings.get("daggerheart-card-deck-hud", this.itemTypesSetting);
+        const typesSetting = game.settings.get('daggerheart-card-deck-hud', this.itemTypesSetting);
         const defaultOrder = typesSetting.length ? typesSetting : this._getItemTypesDefaultOrder().map(type => ({ type, label: _loc(this._getTypeLabel(type)), active: !['loot', 'consumable'].includes(type) })).sort((a, b) => a.label.localeCompare(b.label));
         const typesMap = new Map(defaultOrder.map(item => [item.type, item]));
 
@@ -276,7 +300,7 @@ export default class DHDeck {
             .map(type => ({
                 type,
                 label: _loc(this._getTypeLabel(type)),
-                active: typesMap.get(type)?.active ?? type !== "loot"
+                active: typesMap.get(type)?.active ?? type !== 'loot'
             }));
 
         itemTypes.sort((a, b) => {
@@ -291,19 +315,19 @@ export default class DHDeck {
     }
 
     _getItemTypesDefaultOrder() {
-        if(this.actor.type !== 'character') return ['feature', 'potentialAdversaries', 'weapon'];
+        if (this.actor.type !== 'character') return ['feature', 'potentialAdversaries', 'weapon'];
         const knownTypes = ['ancestry', 'community', 'class', 'subclass', 'domainCard', 'beastform', 'consumable', 'loot', 'armor', 'weapon'];
-        knownTypes.push(...Item.TYPES.filter(type => !knownTypes.includes(type) && !["base", "feature"].includes(type)));
+        knownTypes.push(...Item.TYPES.filter(type => !knownTypes.includes(type) && !['base', 'feature'].includes(type)));
         return knownTypes;
     }
 
     _getTypeLabel(type) {
-        if(type === 'potentialAdversaries') return 'DAGGERHEART.GENERAL.Tabs.potentialAdversaries';
+        if (type === 'potentialAdversaries') return 'DAGGERHEART.GENERAL.Tabs.potentialAdversaries';
         return `TYPES.Item.${type}`;
     }
 
     _setDeckSize() {
-        const cards = [...this.element.querySelectorAll(".dh-card")];
+        const cards = [...this.element.querySelectorAll('.dh-card')];
         if (cards.length) {
             const bounds = cards.reduce((bounds, card) => {
                 const rect = card.getBoundingClientRect();
@@ -330,17 +354,17 @@ export default class DHDeck {
         if (!this.element) return;
 
         if (value === 0) {
-            this.element.style.removeProperty("--card-gradient");
-            this.element.classList.add("no-gradient");
+            this.element.style.removeProperty('--card-gradient');
+            this.element.classList.add('no-gradient');
             return;
         }
 
-        this.element.classList.remove("no-gradient");
-        this.element.style.setProperty("--card-gradient", `${100 - value}%`);
+        this.element.classList.remove('no-gradient');
+        this.element.style.setProperty('--card-gradient', `${100 - value}%`);
     }
 
     setVarStyle() {
-        this.element.style.setProperty("--hover-y-value", `${game.settings.get(MODULE_ID, "hoverY") * -1}rem`);
-        this.element.style.setProperty("--selected-scale", `${game.settings.get(MODULE_ID, "selectedCardScale")}`);
+        this.element.style.setProperty('--hover-y-value', `${game.settings.get(MODULE_ID, 'hoverY') * -1}rem`);
+        this.element.style.setProperty('--selected-scale', `${game.settings.get(MODULE_ID, 'selectedCardScale')}`);
     }
 }
