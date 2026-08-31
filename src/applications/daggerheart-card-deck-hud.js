@@ -1,5 +1,5 @@
-import { MODULE_ID } from "../system/constants";
-import DHDeck from "./deck";
+import { MODULE_ID } from '../system/constants';
+import DHDeck from './deck';
 
 const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
 
@@ -11,16 +11,16 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
     isVault = false;
 
     static DEFAULT_OPTIONS = {
-        id: "dh-card-deck",
-        tag: "div",
+        id: 'dh-card-deck',
+        tag: 'div',
         classes: [
-            "daggerheart",
-            "dh-style",
-            "dh-card-deck"
+            'daggerheart',
+            'dh-style',
+            'dh-card-deck'
         ],
         position: {
-            width: "auto",
-            height: "auto"
+            width: 'auto',
+            height: 'auto'
         },
         window: {
             frame: false,
@@ -45,10 +45,10 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
 
     static PARTS = {
         deck: {
-            template: "modules/daggerheart-card-deck-hud/templates/deck.hbs"
+            template: 'modules/daggerheart-card-deck-hud/templates/deck.hbs'
         },
         controls: {
-            template: "modules/daggerheart-card-deck-hud/templates/controls.hbs"
+            template: 'modules/daggerheart-card-deck-hud/templates/controls.hbs'
         }
     };
 
@@ -66,7 +66,7 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         this.instance = hud;
 
         await hud.render({force: true});
-        hud.element.setAttribute("hidden", "");
+        hud.element.setAttribute('hidden', '');
 
         const token = canvas.tokens?.controlled[0];
 
@@ -100,33 +100,33 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     get cardWidth() {
-        return 10 * parseFloat(getComputedStyle(document.documentElement).fontSize) * (game.settings.get(MODULE_ID, "cardWidth") / 5);
+        return 10 * parseFloat(getComputedStyle(document.documentElement).fontSize) * (game.settings.get(MODULE_ID, 'cardWidth') / 5);
     }
 
     /** @override */
     async _insertElement(element, options) {
-        const uiBottom = document.querySelector("#ui-bottom");
-        const uiRight = document.querySelector("#ui-right-column-1");
-        const positionSetting = game.settings.get(MODULE_ID, "deckPosition");
+        const uiBottom = document.querySelector('#ui-bottom');
+        const uiRight = document.querySelector('#ui-right-column-1');
+        const positionSetting = game.settings.get(MODULE_ID, 'deckPosition');
 
         switch (positionSetting) {
             case 'center':
-                if(uiBottom) {
+                if (uiBottom) {
                     uiBottom.prepend(element);
                     return;
                 }
                 break;    
             case 'right':
-                if(uiRight) uiRight.appendChild(element);
+                if (uiRight) uiRight.appendChild(element);
                 break;
-            case "custom":
-                const position = game.settings.get(MODULE_ID, "deckCustomPosition");
+            case 'custom':
+                const position = game.settings.get(MODULE_ID, 'deckCustomPosition');
                 element.style.left = `${position.left ?? 0}px`;
                 element.style.top = `${position.top ?? 0}px`;
                 break;
         }
 
-        element.classList.add("alternate-positioning", `position-${positionSetting}`);
+        element.classList.add('alternate-positioning', `position-${positionSetting}`);
 
         return super._insertElement(element, options);
     }
@@ -134,13 +134,13 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
     async _onFirstRender(context, options) {
         await super._onFirstRender(context, options);        
 
-        this.element.style.setProperty("--card-width", `${this.cardWidth}px`);
+        this.element.style.setProperty('--card-width', `${this.cardWidth}px`);
         this.setLockPosition();
 
-        ["click", "contextmenu"].forEach(eventType => {
+        ['click', 'contextmenu'].forEach(eventType => {
             document.addEventListener(eventType, event => {
-                if(this.deck?.cards) this._selectCard();
-                if(!this.parts.controls.hasAttribute('data-menu-open') || event.target.closest('.dh-cd-control-settings-menu')) return;
+                if (this.deck?.cards) this._selectCard();
+                if (!this.parts.controls.hasAttribute('data-menu-open') || event.target.closest('.dh-cd-control-settings-menu')) return;
                 this._toggleMenu(event);
             });
         });
@@ -148,51 +148,51 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
 
     async _onRender(context, options) {
         await super._onRender(context, options);
-        if(!this.#actor) return;
+        if (!this.#actor) return;
 
-        if (options.parts?.includes("deck")) {
+        if (options.parts?.includes('deck')) {
             this.parts.deck.replaceChildren(...this.deck.cards.values().map(card => card.element));
             this.deck._setDeckSize();
 
             for (const card of this.deck.cards.values()) {
-                card.element.addEventListener("contextmenu", event => {
+                card.element.addEventListener('contextmenu', event => {
                     event.preventDefault();
                     event.stopPropagation();
                     
-                    if(event.target.closest('button[data-action="copyUuid"]')) {
+                    if (event.target.closest('button[data-action="copyUuid"]')) {
                         const label = _loc(card.item.constructor.metadata.label);
                         game.clipboard.copyPlainText(card.item.id);
-                        return ui.notifications.info("DOCUMENT.IdCopiedClipboard", {format: {label, type: "ID", id: card.item.id}});
+                        return ui.notifications.info('DOCUMENT.IdCopiedClipboard', {format: {label, type: 'ID', id: card.item.id}});
                     }
 
                     this._selectCard(card);
-                    if(this.parts.controls.hasAttribute('data-menu-open')) this._toggleMenu(event);
+                    if (this.parts.controls.hasAttribute('data-menu-open')) this._toggleMenu(event);
                 });
                 
-                card.element.addEventListener("transitionend", event => {
-                    if (event.propertyName !== "transform") return;
-                    if (card.selected) card.element.classList.add("show-actions");
+                card.element.addEventListener('transitionend', event => {
+                    if (event.propertyName !== 'transform') return;
+                    if (card.selected) card.element.classList.add('show-actions');
                 });
             }
-            this.deck.applyGradient(game.settings.get(MODULE_ID, "cardGradient"));
+            this.deck.applyGradient(game.settings.get(MODULE_ID, 'cardGradient'));
             this.deck.setVarStyle();
         }
 
         this.updateMarginPosition();
 
-        if (options.parts?.includes("controls")) {
-            const menu = this.parts.controls.querySelector(".dh-cd-control-settings-menu");
+        if (options.parts?.includes('controls')) {
+            const menu = this.parts.controls.querySelector('.dh-cd-control-settings-menu');
 
             let dragged = null;
 
-            menu.addEventListener("dragstart", event => {
-                dragged = event.target.closest("label");
+            menu.addEventListener('dragstart', event => {
+                dragged = event.target.closest('label');
             });
 
-            menu.addEventListener("dragover", event => {
+            menu.addEventListener('dragover', event => {
                 event.preventDefault();
 
-                const target = event.target.closest("label");
+                const target = event.target.closest('label');
 
                 if (!target || target === dragged) return;
 
@@ -205,7 +205,7 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
                 );
             });
 
-            menu.addEventListener("dragend", async () => {
+            menu.addEventListener('dragend', async () => {
                 dragged = null;
 
                 await this._saveItemTypes();
@@ -213,15 +213,15 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
                 await this.render({ parts: ['deck'] });
             });
 
-            const settingsButton = this.element.querySelector("[data-action='toggleMenu']");
-            if (settingsButton) settingsButton.addEventListener("contextmenu", this._toggleMenu.bind(this));
+            const settingsButton = this.element.querySelector('[data-action=\'toggleMenu\']');
+            if (settingsButton) settingsButton.addEventListener('contextmenu', this._toggleMenu.bind(this));
 
-            const moveButton = this.element.querySelector(".dh-cd-control-move");
+            const moveButton = this.element.querySelector('.dh-cd-control-move');
             if (moveButton) {
-                moveButton.addEventListener("pointerdown", this.#onDragStart);
-                moveButton.addEventListener("contextmenu", event => {
-                    const lockSetting = game.settings.get(MODULE_ID, "lockPosition");
-                    game.settings.set(MODULE_ID, "lockPosition", !lockSetting);
+                moveButton.addEventListener('pointerdown', this.#onDragStart);
+                moveButton.addEventListener('contextmenu', event => {
+                    const lockSetting = game.settings.get(MODULE_ID, 'lockPosition');
+                    game.settings.set(MODULE_ID, 'lockPosition', !lockSetting);
                 });
             }
         }
@@ -236,18 +236,18 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         } */
     }
 
-    updateMarginPosition({ deckBorderMargin, deckBottomMargin, deckBetweenMargin }={}) {
-        if(!this.element) return;
-        deckBorderMargin ??= game.settings.get(MODULE_ID, "deckBorderMargin");
-        deckBottomMargin ??= game.settings.get(MODULE_ID, "deckBottomMargin");
-        deckBetweenMargin ??= game.settings.get(MODULE_ID, "deckBetweenMargin");
-        this.element.style.setProperty("--borderMargin", `${deckBorderMargin}px`);
-        this.element.style.setProperty("--bottomMargin", `${deckBottomMargin}px`);
-        this.element.style.setProperty("--betweenMargin", `${deckBetweenMargin}px`);
+    updateMarginPosition({ deckBorderMargin, deckBottomMargin, deckBetweenMargin } = {}) {
+        if (!this.element) return;
+        deckBorderMargin ??= game.settings.get(MODULE_ID, 'deckBorderMargin');
+        deckBottomMargin ??= game.settings.get(MODULE_ID, 'deckBottomMargin');
+        deckBetweenMargin ??= game.settings.get(MODULE_ID, 'deckBetweenMargin');
+        this.element.style.setProperty('--borderMargin', `${deckBorderMargin}px`);
+        this.element.style.setProperty('--bottomMargin', `${deckBottomMargin}px`);
+        this.element.style.setProperty('--betweenMargin', `${deckBetweenMargin}px`);
     }
 
     setLockPosition() {
-        this.element.setAttribute('data-lock-position', game.settings.get(MODULE_ID, "lockPosition"));
+        this.element.setAttribute('data-lock-position', game.settings.get(MODULE_ID, 'lockPosition'));
     }
 
     async setActor(actor, token = null) {
@@ -255,7 +255,7 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         this.#token = token;
         this.isVault = false;
 
-        this.element.removeAttribute("hidden");
+        this.element.removeAttribute('hidden');
         
         await this.createDeck();
     }
@@ -265,13 +265,13 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         this.#token = null;
         this.deck = null;
 
-        this.element.setAttribute("hidden", "");
+        this.element.setAttribute('hidden', '');
         this.element.replaceChildren();
     }
 
     async createDeck() {
         this.deck = await DHDeck.create(this.#actor, this);
-        await this.render({ parts: ["deck", "controls"] });
+        await this.render({ parts: ['deck', 'controls'] });
     }
 
     /* -------------------------------------------- */
@@ -279,29 +279,29 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
     /** @override */
     async _preparePartContext(partId, context, options) {
         context = await super._preparePartContext(partId, context, options);
-        if(!this.#actor) return context;
+        if (!this.#actor) return context;
         switch (partId) {
-            case "deck": return this._prepareDeckContext(context, options);
-            case "controls": return this._prepareControlsContext(context, options);
+            case 'deck': return this._prepareDeckContext(context, options);
+            case 'controls': return this._prepareControlsContext(context, options);
         }
         return context;
     }
 
     async _prepareDeckContext(partId, context, options) {
         context = await super._preparePartContext(partId, context, options);
-        if(!this.#actor) return context;
+        if (!this.#actor) return context;
         context.classes = this.deck.classes;
         context.cardCount = this.deck.cards.size;
-        context.cardOverlap = game.settings.get(MODULE_ID, "cardOverlap") ?? 55;
+        context.cardOverlap = game.settings.get(MODULE_ID, 'cardOverlap') ?? 55;
         return context;
     }
 
     _prepareControlsContext(context, options) {
         context.itemTypes = this.deck.itemTypes;
-        context.isFreePositioning = game.settings.get(MODULE_ID, "deckPosition") === 'custom';
+        context.isFreePositioning = game.settings.get(MODULE_ID, 'deckPosition') === 'custom';
         context.isCharacter = this.isCharacter;
         context.characterType = this.#actor.type;
-        if(this.isCharacter) {
+        if (this.isCharacter) {
             context.isVault = this.isVault;
             context.hasVaultCards = this.#actor.system.domainCards.vault.length > 0;
         }
@@ -311,26 +311,26 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
     static async #toggleVault() {
         this.isVault = !this.isVault;
         await this.deck.createCards();
-        await this.render({ parts: ["deck", "controls"] });
+        await this.render({ parts: ['deck', 'controls'] });
     }
 
     static async #toggleHUD() {
         this.#isCollapsed = !this.#isCollapsed;
 
         const deck = this.parts.deck;
-        const marginSetting = game.settings.get(MODULE_ID, "deckBottomMargin");
+        const marginSetting = game.settings.get(MODULE_ID, 'deckBottomMargin');
         let offset = marginSetting;
 
         if (!deck) return;
 
-        if(this.#isCollapsed) {
+        if (this.#isCollapsed) {
             const rect = deck.getBoundingClientRect();
             offset = `calc(${window.innerHeight - rect.top}px + 1rem + ${marginSetting}px)`;
         }
 
-        deck.style.setProperty("--dh-cd-hide-offset", offset);
+        deck.style.setProperty('--dh-cd-hide-offset', offset);
 
-        this.element.classList.toggle("is-hidden", this.#isCollapsed);
+        this.element.classList.toggle('is-hidden', this.#isCollapsed);
     }
 
     static async #toggleMenu(event) {
@@ -340,7 +340,7 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
     async _toggleMenu(event) {
         event.preventDefault();
         event.stopPropagation();
-        this.parts.controls.toggleAttribute("data-menu-open");
+        this.parts.controls.toggleAttribute('data-menu-open');
     }
 
     static async #toggleItemType(event, target) {
@@ -357,11 +357,11 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     async _saveItemTypes() {
-        const itemTypes = [...this.parts.controls.querySelectorAll(".dh-cd-control-settings-menu label")]
-        .map(label => ({
-            type: label.dataset.type,
-            active: label.querySelector('input[type="checkbox"]').checked
-        }));
+        const itemTypes = [...this.parts.controls.querySelectorAll('.dh-cd-control-settings-menu label')]
+            .map(label => ({
+                type: label.dataset.type,
+                active: label.querySelector('input[type="checkbox"]').checked
+            }));
 
         this.deck.itemTypes = itemTypes;
 
@@ -372,19 +372,19 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         const { cardId } = target.closest('[data-card-id').dataset;
         const card = this.deck.cards.get(cardId);
 
-        if(!card.isLocked && (!game.settings.get(MODULE_ID, "directAction") || card.selected)) return card.use(event);
+        if (!card.isLocked && (!game.settings.get(MODULE_ID, 'directAction') || card.selected)) return card.use(event);
         this._selectCard(card);
     }
 
     _selectCard(card) {
-        if(card) card.toggleSelected();
+        if (card) card.toggleSelected();
         for (const otherCard of this.deck.cards.values()) {
             if (otherCard !== card && otherCard.selected) otherCard.selected = false;
         }
     }
 
     static _unselectCard(event, force = false) {
-        const selectedCard = DHCardDeckHUD.instance.element.querySelector(".dh-card.selected");
+        const selectedCard = DHCardDeckHUD.instance.element.querySelector('.dh-card.selected');
         if ((selectedCard && !selectedCard.contains(event.target)) || force) {
             DHCardDeckHUD.instance.element.querySelectorAll('.dh-card.selected')
                 .forEach(c => {
@@ -397,21 +397,21 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
     static async #sendToVault(event, target) {
         const { itemId } = target.closest('[data-item-id').dataset;
         const item = fromUuidSync(itemId);
-        if(!item && !(typeof item.system?.toggleVault === 'function')) return;
+        if (!item && !(typeof item.system?.toggleVault === 'function')) return;
         await item.system.toggleVault(event, true, false);
     }
 
     static async #sendToLoadout(event, target) {
         const { itemId } = target.closest('[data-item-id').dataset;
         const item = fromUuidSync(itemId);
-        if(!item && !(typeof item.system?.toggleVault === 'function')) return;
+        if (!item && !(typeof item.system?.toggleVault === 'function')) return;
         await item.system.toggleVault(event, false, false);
     }
 
     static async #recall(event, target) {
         const { itemId } = target.closest('[data-item-id').dataset;
         const item = fromUuidSync(itemId);
-        if(!item && !(typeof item.system?.toggleVault === 'function')) return;
+        if (!item && !(typeof item.system?.toggleVault === 'function')) return;
         await item.system.toggleVault(event, false, true);
     }
 
@@ -420,7 +420,7 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         event.stopPropagation();
         const { itemId } = target.closest('[data-item-id').dataset;
         const item = fromUuidSync(itemId);
-        if(!item) return;
+        if (!item) return;
         item.toChat(item.uuid);
     }
 
@@ -428,7 +428,7 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         const card = target.closest('[data-item-id');
         const { itemId } = card.dataset;
         const item = fromUuidSync(itemId);
-        if(!item) return;
+        if (!item) return;
         item.sheet.render({ force: true });
         card.classList.remove('show-actions');
         card.classList.remove('selected');
@@ -438,7 +438,7 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         const card = target.closest('[data-item-id');
         const { itemId } = card.dataset;
         const item = fromUuidSync(itemId);
-        if(!item) return;
+        if (!item) return;
         item.delete();
     }
 
@@ -447,14 +447,14 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         event.stopPropagation();
         const { itemId } = target.closest('[data-item-id').dataset;
         const item = fromUuidSync(itemId);
-        if(!item) return;
+        if (!item) return;
         const label = _loc(item.constructor.metadata.label);
         game.clipboard.copyPlainText(item.uuid);
-        ui.notifications.info("DOCUMENT.IdCopiedClipboard", {format: {label, type: "UUID", id: item.uuid}});
+        ui.notifications.info('DOCUMENT.IdCopiedClipboard', {format: {label, type: 'UUID', id: item.uuid}});
     }
 
     #onDragStart = event => {
-        if(game.settings.get(MODULE_ID, "lockPosition")) return;
+        if (game.settings.get(MODULE_ID, 'lockPosition')) return;
         
         event.preventDefault();
 
@@ -468,8 +468,8 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
             top: rect.top
         };
 
-        document.addEventListener("pointermove", this.#onDragMove);
-        document.addEventListener("pointerup", this.#onDragEnd, { once: true });
+        document.addEventListener('pointermove', this.#onDragMove);
+        document.addEventListener('pointerup', this.#onDragEnd, { once: true });
     }
 
     #onDragMove = event => {
@@ -504,13 +504,13 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
 
     #onDragEnd = async event => {
         this.element.removeAttribute('data-dragging');
-        document.removeEventListener("pointermove", this.#onDragMove);
+        document.removeEventListener('pointermove', this.#onDragMove);
 
         if (!this.#dragData) return;
 
         const rect = this.element.getBoundingClientRect();
 
-        await game.settings.set(MODULE_ID, "deckCustomPosition", {
+        await game.settings.set(MODULE_ID, 'deckCustomPosition', {
             left: rect.left,
             top: rect.top
         });
