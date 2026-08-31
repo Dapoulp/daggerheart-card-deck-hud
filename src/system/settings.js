@@ -76,6 +76,16 @@ export function registerSettings() {
             await DHCardDeckHUD.create();
         }
     });
+
+    game.settings.register(MODULE_ID, "lockPosition", {
+        name: "DHDECKCARD.SETTINGS.HideHotbar.label",
+        hint: "DHDECKCARD.SETTINGS.HideHotbar.hint",
+        scope: 'client',
+        config: false,
+        type: Boolean,
+        default: false,
+        onChange: (value) => DHCardDeckHUD.instance?.setLockPosition()
+    });
     
     game.settings.register(MODULE_ID, 'deckStyle', {
         name: "DHDECKCARD.SETTINGS.DeckStyle.label",

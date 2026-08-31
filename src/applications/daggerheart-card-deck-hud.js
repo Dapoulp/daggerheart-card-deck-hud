@@ -135,6 +135,7 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         await super._onFirstRender(context, options);        
 
         this.element.style.setProperty("--card-width", `${this.cardWidth}px`);
+        this.setLockPosition();
 
         ["click", "contextmenu"].forEach(eventType => {
             document.addEventListener(eventType, event => {
@@ -216,7 +217,13 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
             if (settingsButton) settingsButton.addEventListener("contextmenu", this._toggleMenu.bind(this));
 
             const moveButton = this.element.querySelector(".dh-cd-control-move");
-            if (moveButton) moveButton.addEventListener("pointerdown", this.#onDragStart);
+            if (moveButton) {
+                moveButton.addEventListener("pointerdown", this.#onDragStart);
+                moveButton.addEventListener("contextmenu", event => {
+                    const lockSetting = game.settings.get(MODULE_ID, "lockPosition");
+                    game.settings.set(MODULE_ID, "lockPosition", !lockSetting);
+                });
+            }
         }
 
         // Test Animation Cards Reveal
@@ -237,6 +244,10 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         this.element.style.setProperty("--borderMargin", `${deckBorderMargin}px`);
         this.element.style.setProperty("--bottomMargin", `${deckBottomMargin}px`);
         this.element.style.setProperty("--betweenMargin", `${deckBetweenMargin}px`);
+    }
+
+    setLockPosition() {
+        this.element.setAttribute('data-lock-position', game.settings.get(MODULE_ID, "lockPosition"));
     }
 
     async setActor(actor, token = null) {
@@ -443,6 +454,8 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
     }
 
     #onDragStart = event => {
+        if(game.settings.get(MODULE_ID, "lockPosition")) return;
+        
         event.preventDefault();
 
         this.element.setAttribute('data-dragging', '');
