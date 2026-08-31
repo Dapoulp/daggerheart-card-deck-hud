@@ -5,7 +5,6 @@
 
     display: flex;
     flex-direction: column;
-    // align-items: center;
     z-index: 100;
     pointer-events: none;
     position: relative;
@@ -36,6 +35,11 @@
         &.position-right {
             position: absolute;
             right: var(--borderMargin);
+
+            .dh-cd-control-settings-menu {
+                left: unset;
+                right: 100%;
+            }
         }
 
         &.position-custom {
