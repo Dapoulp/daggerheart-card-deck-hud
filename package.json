@@ -19,7 +19,8 @@
     "watch": "node build.mjs --watch",
     "start": "npm run watch",
     "lint": "eslint",
-    "lint:fix": "eslint --fix"
+    "lint:fix": "eslint --fix",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
