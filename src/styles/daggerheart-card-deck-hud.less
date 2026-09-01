@@ -8,6 +8,7 @@
     z-index: 100;
     pointer-events: none;
     position: relative;
+    border: unset !important;
 
     &:not([data-dragging]) {
         transition: left 0.2s ease,
@@ -265,6 +266,10 @@
             .domain-card-banner {
                 transform: translateZ(0);
             }
+
+            .unequipped {
+                opacity: 0.5;
+            }
         }
 
         .dh-card {
@@ -273,6 +278,10 @@
 
             .recall-cost {
                 --border-size: calc(var(--width) * 0.066);
+            }
+
+            > header.dh-card-header img.portrait {
+                transform: translateZ(0);
             }
 
             > article {
@@ -364,7 +373,6 @@
         }
 
         .dh-cd-control-switch {
-            width: 4.5rem;
             font-weight: 600;
         }
 

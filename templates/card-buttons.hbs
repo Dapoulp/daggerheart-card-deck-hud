@@ -27,4 +27,9 @@
         <i class="fa-solid fa-paw fa-fw" inert=""></i>
     </button>
     {{/if}}
+    {{#if (hasProperty this "equipped")}}
+    <button data-action="toggleEquipped" title="{{localize (ifThen equipped 'DAGGERHEART.UI.Tooltip.unequip' 'DAGGERHEART.UI.Tooltip.equip')}}">
+        <i class="fa-solid fa-hands fa-fw{{#unless equipped}} unequipped {{/unless}}" inert=""></i>
+    </button>
+    {{/if}}
 </div>

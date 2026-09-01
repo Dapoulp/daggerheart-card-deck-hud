@@ -254,9 +254,11 @@ export default class DHCard {
     }
 
     async addButtons() {
+        const buttonsContext = { type: this.item.type, inVault: this.item.system.inVault };
+        if (foundry.utils.hasProperty(this.item.system, 'equipped')) buttonsContext.equipped = this.item.system.equipped;
         const buttonsContent = await foundry.applications.handlebars.renderTemplate(
             'modules/daggerheart-card-deck-hud/templates/card-buttons.hbs',
-            { type: this.item.type, inVault: this.item.system.inVault }
+            buttonsContext
         );
 
         const buttonsContainer = document.createElement('div');
@@ -318,5 +320,34 @@ export default class DHCard {
         }
 
         if (this.selected) this.selected = false;
+    }
+
+    async toggleEquipped() {
+        if (this.item.system.equipped) {
+            await this.item.update({ 'system.equipped': false });
+            return;
+        }
+
+        switch (this.item.type) {
+            case 'armor':
+                const currentArmor = this.actor.system.armor;
+                if (currentArmor) {
+                    await currentArmor.update({ 'system.equipped': false });
+                }
+
+                await this.item.update({ 'system.equipped': true });
+                break;
+            case 'weapon':
+                if (this.actor.activeBeastform) {
+                    return ui.notifications.warn(
+                        game.i18n.localize('DAGGERHEART.UI.Notifications.beastformEquipWeapon')
+                    );
+                }
+
+                await this.actor.system.constructor.unequipBeforeEquip.bind(this.actor.system)(this.item);
+
+                await this.item.update({ 'system.equipped': true });
+                break;
+        }
     }
 }

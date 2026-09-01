@@ -62,6 +62,7 @@ export default class DHDeck {
         const items = [];
         
         if (this.actor.type === 'character') {
+            if (this.parent.isEquipment) return this.actor.items.filter(item => item.system.equipped === false);
             if (this.parent.isVault) return this.actor.system.domainCards.vault;
 
             const isBeastform = this.actor.system.activeBeastform;
