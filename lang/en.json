@@ -127,7 +127,8 @@
             "NoUse": "No Action or Feature attached to this card."
         },
         "TOOLTIP": {
-            "DragLock": "Drag to move. Right-click to lock/unlock."
+            "DragLock": "Drag to move. Right-click to lock/unlock.",
+            "SwitchTo": "Switch to {tab}"
         }
     },
     "DAGGERHEART": {
