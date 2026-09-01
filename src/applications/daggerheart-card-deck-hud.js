@@ -9,6 +9,7 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
     #dragData = null;
     #isCollapsed = false;
     isVault = false;
+    isEquipment = false;
 
     static DEFAULT_OPTIONS = {
         id: 'dh-card-deck',
@@ -29,6 +30,7 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         },
         actions: {
             toggleVault: this.#toggleVault,
+            toggleEquipment: this.#toggleEquipment,
             toggleHUD: this.#toggleHUD,
             toggleMenu: this.#toggleMenu,
             toggleItemType: this.#toggleItemType,
@@ -39,7 +41,8 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
             sendToChat: this.#sendToChat,
             editItem: this.#editItem,
             cancelBeastform: this.#cancelBeastform,
-            copyUuid: this.#copyUuid
+            copyUuid: this.#copyUuid,
+            toggleEquipped: this.#toggleEquipped
         }
     };
 
@@ -254,6 +257,7 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         this.#actor = actor;
         this.#token = token;
         this.isVault = false;
+        this.isEquipment = false;
 
         this.element.removeAttribute('hidden');
         
@@ -303,13 +307,21 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         context.characterType = this.#actor.type;
         if (this.isCharacter) {
             context.isVault = this.isVault;
+            context.isEquipment = this.isEquipment;
             context.hasVaultCards = this.#actor.system.domainCards.vault.length > 0;
+            context.hasEquipmentCards = this.#actor.items.filter(item => item.system.equipped === false).length > 0;
         }
         return context;
     }
 
     static async #toggleVault() {
         this.isVault = !this.isVault;
+        await this.deck.createCards();
+        await this.render({ parts: ['deck', 'controls'] });
+    }
+
+    static async #toggleEquipment() {
+        this.isEquipment = !this.isEquipment;
         await this.deck.createCards();
         await this.render({ parts: ['deck', 'controls'] });
     }
@@ -372,8 +384,15 @@ export class DHCardDeckHUD extends HandlebarsApplicationMixin(ApplicationV2) {
         const { cardId } = target.closest('[data-card-id').dataset;
         const card = this.deck.cards.get(cardId);
 
+        if (!card.isLocked && this.isEquipment && card.item.system.equipped === false) return card.toggleEquipped();
         if (!card.isLocked && (!game.settings.get(MODULE_ID, 'directAction') || card.selected)) return card.use(event);
         this._selectCard(card);
+    }
+
+    static #toggleEquipped(event, target) {
+        const { cardId } = target.closest('[data-card-id').dataset;
+        const card = this.deck.cards.get(cardId);
+        if (!card.isLocked) return card.toggleEquipped();
     }
 
     _selectCard(card) {

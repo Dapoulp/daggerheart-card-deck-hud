@@ -1,7 +1,10 @@
 <div class="dh-cd-controls" data-character-type="{{characterType}}">
     {{#if isCharacter}}
     <button type="button" class="dh-cd-control-switch" data-action="toggleVault"{{#if (and (not hasVaultCards) (not isVault))}} disabled{{/if}}>
-        {{ifThen isVault "Vault" "Loadout"}}
+        {{localize (ifThen isVault "DAGGERHEART.GENERAL.Tabs.vault" "DAGGERHEART.GENERAL.Tabs.loadout")}}
+    </button>
+    <button type="button" class="dh-cd-control-switch" data-action="toggleEquipment"{{#if (and (not hasEquipmentCards) (not isEquipment))}} disabled{{/if}}>
+        {{localize (ifThen isEquipment "DAGGERHEART.GENERAL.Tabs.equipment" "DHDECKCARD.GENERAL.Deck")}}
     </button>
     {{/if}}
     {{#if isFreePositioning}}
